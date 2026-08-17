@@ -91,6 +91,8 @@ char T2C(char_t ternary_char);
 trit comp(CPU_t *cpu, int_t destination, int_t source1);
 results load_mem(CPU_t *cpu, int_t destination, memory *mem, int_t memoryAddress);
 results t_move(CPU_t *cpu, int_t destination, int_t source1);
+results store_mem(CPU_t *cpu, int_t destination, memory *mem, int_t memoryAddress);
+void CPU_status_end(CPU_t cpu, results rs);
 
 void Throw(const char * __restrict__ LogMSG,...);
 
@@ -99,9 +101,33 @@ int main(void*)
         memory mem;
         CPU_t cpu;
         if(CPU_reset(&cpu, &mem) != success) {Throw("CPU failed to iniatlise");}
-        if(CPU_execute(&cpu, &mem, D2T_conversion(2, false)) != success) {Throw("CPU failed to execute");}
-        if(cpu.halt) {Throw("CPU was halted");}
+        results rs = CPU_execute(&cpu, &mem, D2T_conversion(27, false));
+        if(rs != success) {Throw("CPU failed to execute");}
+        CPU_status_end(cpu, rs);
         return 0;
+}
+
+void CPU_status_end(CPU_t cpu, results rs)
+{
+        if(cpu.halt)
+        {
+                switch (rs)
+                {
+                        case success:
+                                printf("CPU stopped");
+                                break;
+                        case unknown_error:
+                                Throw("CPU was halted");
+                                break;
+                        case invalid_memory:
+                                Throw("Invalid Memory Error; CPU has Halted");
+                                break;
+                        default:
+                                Throw("CPU has stopped without a exit code");
+                                break;
+                }
+                return;
+        }
 }
 
 results CPU_execute(CPU_t *cpu, memory *mem, int_t clock_cycle) //clock cycle accepts only a int9
@@ -116,7 +142,8 @@ results CPU_execute(CPU_t *cpu, memory *mem, int_t clock_cycle) //clock cycle ac
 
                 unsigned char inst2bin = T2C(instruction);
                 int_t reg_dst = tern_int_zero, reg_src = tern_int_zero, memoryAddress = tern_int_zero;
-                int dst_index = 0, src_index = 0, memAdd; 
+                char_t address = tern_char_zero;
+                int dst_index = 0, src_index = 0; 
 
                 switch(inst2bin)
                 {
@@ -134,8 +161,11 @@ results CPU_execute(CPU_t *cpu, memory *mem, int_t clock_cycle) //clock cycle ac
                                 break;
                         
                         case jmp:
+                                TernFetch(cpu, *mem, &clock_cycle, &address);
+                                memcpy(memoryAddress.int12, address, sizeof(char_t));
+                                memcpy(cpu->pointer.int12, memoryAddress.int12, sizeof(trit) * 12);
                                 break;
-                        
+        
                         case move:                               
                                 GetReg(cpu, mem, &clock_cycle, &reg_dst, &reg_src);  
                                 t_move(cpu, reg_dst, reg_src);
@@ -149,13 +179,18 @@ results CPU_execute(CPU_t *cpu, memory *mem, int_t clock_cycle) //clock cycle ac
 
                         case load:
                                 GetReg(cpu, mem, &clock_cycle, &reg_dst, NULL);  
-                                dst_index = T2D_converter(reg_dst, false);
-                                TernFetch(cpu, *mem, &clock_cycle, &memoryAddress);
-                                memAdd = T2D_converter(memoryAddress, false); //ADD MEMORY ADDRESS FUNC 
+                                //dst_index = T2D_converter(reg_dst, false);
+                                TernFetch(cpu, *mem, &clock_cycle, &address);
+                                memcpy(memoryAddress.int12, address, sizeof(char_t));
                                 load_mem(cpu, reg_dst, mem, memoryAddress); //load specfic mem address, incomplete!!!
                                 break;
 
                         case store:
+                                GetReg(cpu, mem, &clock_cycle, &reg_dst, NULL);  
+                                //dst_index = T2D_converter(reg_dst, false);
+                                TernFetch(cpu, *mem, &clock_cycle, &address);
+                                memcpy(memoryAddress.int12, address, sizeof(char_t));
+                                store_mem(cpu, reg_dst, mem, memoryAddress);
                                 break;
 
                         case cmp:
@@ -163,6 +198,14 @@ results CPU_execute(CPU_t *cpu, memory *mem, int_t clock_cycle) //clock cycle ac
                                 dst_index = T2D_converter(reg_dst, false), 
                                 src_index = T2D_converter(reg_src, false); 
                                 cpu->flag = comp(cpu, cpu->registers[dst_index], cpu->registers[src_index]);  
+                                break;
+
+                        case shl:
+                                Throw("Shift_Left has not been added yet\nif your seeing this, this might be memory corruption!");
+                                break;
+
+                        case shr:
+                                Throw("Shift_Right has not been added yet\nif your seeing this, this might be memory corruption!");
                                 break;
 
                         case quit:
@@ -195,22 +238,19 @@ void TernFetch(CPU_t *cpu, memory mem, int_t *clock_cycle, char_t *data)
 
 results CPU_reset(CPU_t *cpu, memory *mem)
 {
-        //inaitlise the ram, so zero out
-        for(uint32_t i = 0; i < MEMORY_SIZE; i++)
-        {
-                *mem->Data[i] = 0;
-        }
+        memset(mem, 0, sizeof(char_t)); //iniatlise RAM aka ZERO out
+        memset(cpu, 0, sizeof(int_t));
 
+        //just in case, btw.
         cpu->halt = false;
 
-        cpu->pointer = (int_t){0}; 
-        cpu->stack = (int_t){0};
+        cpu->pointer = tern_int_zero; 
+        cpu->stack = tern_int_zero;
         
         for(uint32_t i = 0; i < register_count; i++)
         {
-                cpu->registers[i] = (int_t){0};
+                cpu->registers[i] = tern_int_zero;
         }
- 
         return success;
 }
 
@@ -238,10 +278,19 @@ results t_move(CPU_t *cpu, int_t destination, int_t source1) //move function to 
         return success;
 }
 
+results store_mem(CPU_t *cpu, int_t destination, memory *mem, int_t memoryAddress)
+{
+        int rg_count = T2D_converter(destination, false);
+        memcpy(mem->Data[T2D_converter(memoryAddress, true)], cpu->registers[rg_count].int9, sizeof(char_t));
+        //*mem->Data[T2D_converter(memoryAddress, false)] = cpu->registers[rg_count].int9;
+        return success;
+}
+
 results load_mem(CPU_t *cpu, int_t destination, memory *mem, int_t memoryAddress)
 {
         int rg_count = T2D_converter(destination, false);
-        *cpu->registers[rg_count].int9 = *mem->Data[T2D_converter(memoryAddress, false)];
+        //*cpu->registers[rg_count].int9 = *mem->Data[T2D_converter(memoryAddress, false)];
+        memcpy(cpu->registers[rg_count].int9, mem->Data[T2D_converter(memoryAddress, true)], sizeof(char_t));
         return success;
 }
 
@@ -293,7 +342,6 @@ void GetReg(CPU_t *cpu, memory *mem, int_t *clock_cycle, int_t *reg_dst, int_t *
         if(reg_src != NULL) *reg_src = reg_decoder(temp_cell, false);   
         return;
 }
-
 
 int T2D_converter(int_t TernNumber, bool int12) //Ternary to Decimal Converter
 {
@@ -520,6 +568,17 @@ int_t flip(int_t X, bool int12)
         }
 
         return sum;
+}
+
+void ProgramLoader()
+{
+        FILE *tasm_file = fopen("test.tasm", "r");
+        char buffer[256];
+
+        while(fgets(buffer, sizeof(buffer), tasm_file))
+        {
+                
+        }
 }
 
 void Throw(const char * __restrict__ LogMSG,...) //Throws an error
