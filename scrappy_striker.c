@@ -20,9 +20,17 @@ typedef struct
         trit int12[12]; //12-trit values
 } int_t;
 
+typedef struct
+{
+        int_t dst;
+        int_t src;
+} encoder; //temporary, this will be refactored much later on.
+
+
 typedef trit char_t[5]; //a custom trit char
 
 #define tern_zero (trit)0
+#define tern_int_zero (int_t){0}
 #define tern_char_zero (char_t){0}
 
 typedef enum 
@@ -43,7 +51,7 @@ typedef enum
         halt = MEMORY_SIZE - 1 //halt should be the max mem.(✓)
 } op_codes;
 
-//quit and halt are at the ends of the spectrum, if a overflow occurs and affects a "critical" system.
+//quit and halt are at the ends of the spectrum, if a overflow occurs and affects a "critical" system, the system would shutdown.
 //the program should be able to leave and log it.
 
 typedef enum 
@@ -70,7 +78,7 @@ typedef struct
 results CPU_reset(CPU_t *cpu, memory *mem);
 results CPU_execute(CPU_t *cpu, memory *mem, int_t clock_cycle);
 int_t D2T_conversion(int8_t number, bool int12);
-void TernFetch(CPU_t cpu, memory mem, int_t *clock_cycle, char_t *data);
+void TernFetch(CPU_t *cpu, memory mem, int_t *clock_cycle, char_t *data);
 int T2D_converter(int_t TernNumber, bool int12);
 int_t TernaryAdd(int_t X, int_t Y, bool int12);
 int_t TernarySub(int_t X, int_t Y, bool int12);
@@ -96,26 +104,37 @@ results CPU_execute(CPU_t *cpu, memory *mem, int_t clock_cycle) //clock cycle ac
         while (T2D_converter(clock_cycle, false) > 0)
         {
                 char_t instruction = (char_t){0};
-                TernFetch(*cpu, *mem, &clock_cycle, &instruction);
+                TernFetch(cpu, *mem, &clock_cycle, &instruction);
                 printf("%d\n", T2D_converter(clock_cycle, false));
 
                 unsigned char inst2bin = T2C(instruction);
 
                 switch(inst2bin)
                 {
-                        case add:                               
-                                break;
-                        
+                        case add:  
+                                int_t reg_dst = tern_int_zero; int_t reg_src = tern_int_zero;
+                                GetReg(cpu, mem, &clock_cycle, &reg_dst, &reg_src);    
+                                TernaryAdd(reg_dst, reg_src, false);
+                                break; 
                         case sub:
+                                int_t reg_dst = tern_int_zero; int_t reg_src = tern_int_zero;
+                                GetReg(cpu, mem, &clock_cycle, &reg_dst, &reg_src);    
+                                TernarySub(reg_dst, reg_src, false);
                                 break;
                         
                         case jmp:
                                 break;
                         
                         case move:
+                                int_t reg_dst = tern_int_zero; int_t reg_src = tern_int_zero;
+                                GetReg(cpu, mem, &clock_cycle, &reg_dst, &reg_src);  
+                                t_move(cpu, reg_dst, reg_src);
                                 break;
 
                         case flp:
+                                int_t reg_dst = tern_int_zero;
+                                GetReg(cpu, mem, &clock_cycle, &reg_dst, NULL);  
+                                flip(reg_dst, false);
                                 break;
 
                         case load:
@@ -125,14 +144,20 @@ results CPU_execute(CPU_t *cpu, memory *mem, int_t clock_cycle) //clock cycle ac
                                 break;
 
                         case cmp:
+                                int_t reg_dst = tern_int_zero; int_t reg_src = tern_int_zero;
+                                GetReg(cpu, mem, &clock_cycle, &reg_dst, &reg_src);
+                                cpu->flag = comp(cpu, reg_dst, reg_src);  
                                 break;
 
                         case quit:
+                                cpu->halt = true;
+                                //Add here quit function to zero out everything and quit "Peacefully"
+                                return success;
                                 break;
 
                         case halt:
                                 cpu->halt = true;
-                                return success;
+                                return unknown_error;
                                 break;
                         default:
                                 Throw("No Instruction was set %c", inst2bin);
@@ -141,11 +166,13 @@ results CPU_execute(CPU_t *cpu, memory *mem, int_t clock_cycle) //clock cycle ac
         }      
 }
 
-void TernFetch(CPU_t cpu, memory mem, int_t *clock_cycle, char_t *data)
+
+
+void TernFetch(CPU_t *cpu, memory mem, int_t *clock_cycle, char_t *data)
 {
         //char_t tmp_data; //= mem.Data[T2D_converter(cpu.pointer, true)];
-        if(mem_read(&mem, cpu.pointer, &data) != success) {Throw("failed to read memory");}
-        cpu.pointer = TernaryAdd(cpu.pointer, D2T_conversion(1, true), true);
+        if(mem_read(&mem, cpu->pointer, &data) != success) {Throw("failed to read memory");}
+        cpu->pointer = TernaryAdd(cpu->pointer, D2T_conversion(1, true), true);
         *clock_cycle = TernarySub(*clock_cycle, D2T_conversion(1, false), false);
         return;      
 } //No need to refrence the mem or cpu, we are not modifying it. simply just reading.
@@ -230,6 +257,25 @@ results mem_write(memory *mem, int_t address, char_t *data)//writes memory with 
         *mem->Data[add_temp] = *data;
         return success;
 }
+
+int_t reg_decoder(char_t cell, bool dst) //returns an int9
+{
+        int packed = T2C(cell);   
+        if(dst) 
+        return D2T_conversion(packed % register_count, false); //destination
+        else
+        return D2T_conversion((packed / register_count) % register_count, false); //source1
+}
+
+void GetReg(CPU_t *cpu, memory *mem, int_t *clock_cycle, int_t *reg_dst, int_t *reg_src)
+{
+        char_t temp_cell = tern_char_zero;
+        TernFetch(cpu, *mem, &clock_cycle, &temp_cell);
+        if(&reg_dst != NULL)*reg_dst = reg_decoder(temp_cell, true); else Throw("Register is NULL");
+        if(&reg_src != NULL) *reg_src = reg_decoder(temp_cell, false);   
+        return;
+}
+
 
 int T2D_converter(int_t TernNumber, bool int12) //Ternary to Decimal Converter
 {
