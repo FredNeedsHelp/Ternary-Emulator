@@ -4,88 +4,18 @@
 #include <stdio.h>
 #include <string.h>
 
-#define register_count 3
-#define MEMORY_SIZE 27 //terns of data, at moment 3^3=27
-#define ArraySize(arr) (sizeof(arr) / sizeof(arr[0]))
-
-typedef enum
-{
-        pos = 1,
-        net = 0,
-        neg = -1
-} trit;
-
-typedef struct
-{
-        trit int9[9]; //9-trit values
-        trit int12[12]; //12-trit values
-} int_t;
-
-typedef struct
-{
-        int_t dst;
-        int_t src;
-} encoder; //temporary, this will be refactored much later on.
-
-
-typedef trit char_t[5]; //a custom trit char
-
-#define tern_zero (trit)0
-#define tern_int_zero (int_t){0}
-#define tern_char_zero {0}
-
-typedef enum 
-{
-        add = 1,  //(✓)
-        sub = 2,  //(✓)
-        jmp = 3,  //jump to a line of code
-        load = 4, //load from memory
-        store = 5, //store in memory
-        move = 6, //move between registeries (✓)
-        shr = 7, //shift to the right
-        shl = 8, //shift to the left
-        cmp = 9, //compare (✓)
-        max = 10, //min & max are functionally redundent, only usefull for convience.
-        min = 11,
-        flp = 12, //this is negative op, but due to naming conventions. it will be called flip to flip the numbers "polarity" (✓)
-        quit = 0,
-        halt = MEMORY_SIZE - 1 //halt should be the max mem.(✓)
-} op_codes;
-
-//quit and halt are at the ends of the spectrum, if a overflow occurs and affects a "critical" system, the system would shutdown.
-//the program should be able to leave and log it.
-
-typedef enum 
-{
-        success = 0,
-        unknown_error = 1,
-        invalid_memory = 2
-} results;
-
-typedef struct 
-{
-        char_t Data[MEMORY_SIZE];
-} memory;
-
-typedef struct
-{
-        int_t pointer, stack; //pointer means the program the counter btw
-        int_t registers[register_count]; //int9       
-        trit flag;
-        bool halt;
-} CPU_t;
+#include "scrappy_striker.h"
 
 //prototype funcs
 results CPU_reset(CPU_t *cpu, memory *mem);
 results CPU_execute(CPU_t *cpu, memory *mem, int_t clock_cycle);
-int_t D2T_conversion(int8_t number, bool int12);
+
 void TernFetch(CPU_t *cpu, memory mem, int_t *clock_cycle, char_t *data);
 int T2D_converter(int_t TernNumber, bool int12);
-int_t TernaryAdd(int_t X, int_t Y, bool int12);
+
 int_t TernarySub(int_t X, int_t Y, bool int12);
 int_t flip(int_t X, bool int12);
 results mem_read(memory *mem, int_t address, char_t *data);
-results mem_write(memory *mem, int_t address, char_t *data);
 void GetReg(CPU_t *cpu, memory *mem, int_t *clock_cycle, int_t *reg_dst, int_t *reg_src);
 char T2C(char_t ternary_char);
 trit comp(CPU_t *cpu, int_t destination, int_t source1);
@@ -96,14 +26,16 @@ void CPU_status_end(CPU_t cpu, results rs);
 
 void Throw(const char * __restrict__ LogMSG,...);
 
-int main(void*)
+int main(void)
 {
         memory mem;
         CPU_t cpu;
         if(CPU_reset(&cpu, &mem) != success) {Throw("CPU failed to iniatlise");}
+
         results rs = CPU_execute(&cpu, &mem, D2T_conversion(27, false));
         if(rs != success) {Throw("CPU failed to execute");}
         CPU_status_end(cpu, rs);
+
         return 0;
 }
 
@@ -114,16 +46,16 @@ void CPU_status_end(CPU_t cpu, results rs)
                 switch (rs)
                 {
                         case success:
-                                printf("CPU stopped");
+                                printf("CPU stopped\n");
                                 break;
                         case unknown_error:
-                                Throw("CPU was halted");
+                                Throw("CPU was halted\n");
                                 break;
                         case invalid_memory:
-                                Throw("Invalid Memory Error; CPU has Halted");
+                                Throw("Invalid Memory Error; CPU has Halted\n");
                                 break;
                         default:
-                                Throw("CPU has stopped without a exit code");
+                                Throw("CPU has stopped without a exit code\n");
                                 break;
                 }
                 return;
@@ -151,13 +83,13 @@ results CPU_execute(CPU_t *cpu, memory *mem, int_t clock_cycle) //clock cycle ac
                                 GetReg(cpu, mem, &clock_cycle, &reg_dst, &reg_src);  
                                 dst_index = T2D_converter(reg_dst, false), 
                                 src_index = T2D_converter(reg_src, false); 
-                                TernaryAdd(cpu->registers[dst_index], cpu->registers[src_index], false);
+                                cpu->registers[dst_index] = TernaryAdd(cpu->registers[dst_index], cpu->registers[src_index], false);
                                 break; 
                         case sub:
                                 GetReg(cpu, mem, &clock_cycle, &reg_dst, &reg_src); 
                                 dst_index = T2D_converter(reg_dst, false), 
                                 src_index = T2D_converter(reg_src, false);   
-                                TernarySub(cpu->registers[dst_index], cpu->registers[src_index], false);
+                                cpu->registers[dst_index] = TernarySub(cpu->registers[dst_index], cpu->registers[src_index], false);
                                 break;
                         
                         case jmp:
@@ -174,7 +106,7 @@ results CPU_execute(CPU_t *cpu, memory *mem, int_t clock_cycle) //clock cycle ac
                         case flp:
                                 GetReg(cpu, mem, &clock_cycle, &reg_dst, NULL);  
                                 dst_index = T2D_converter(reg_dst, false);
-                                flip(cpu->registers[dst_index], false);
+                                cpu->registers[dst_index] = flip(cpu->registers[dst_index], false);
                                 break;
 
                         case load:
@@ -570,17 +502,6 @@ int_t flip(int_t X, bool int12)
         return sum;
 }
 
-void ProgramLoader()
-{
-        FILE *tasm_file = fopen("test.tasm", "r");
-        char buffer[256];
-
-        while(fgets(buffer, sizeof(buffer), tasm_file))
-        {
-                
-        }
-}
-
 void Throw(const char * __restrict__ LogMSG,...) //Throws an error
 {
         va_list arg;
@@ -592,4 +513,3 @@ void Throw(const char * __restrict__ LogMSG,...) //Throws an error
 
         exit(1);
 }
-
