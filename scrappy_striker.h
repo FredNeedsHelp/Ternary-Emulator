@@ -44,10 +44,12 @@ typedef enum
         max = 10, //min & max are functionally redundent, only usefull for convience.
         min = 11,
         flp = 12, //this is negative op, but due to naming conventions. it will be called flip to flip the numbers "polarity" (✓)
+        set = 13,
         quit = 0,
         halt = MEMORY_SIZE - 1, //halt should be the max mem.(✓)
 
-        skip = MEMORY_SIZE - 2
+        skip = MEMORY_SIZE - 2,
+        Unknown_Halt = -1 
 } op_codes;
 
 //quit and halt are at the ends of the spectrum, if a overflow occurs and affects a "critical" system, the system would shutdown.
@@ -73,7 +75,10 @@ typedef struct
         bool halt;
 } CPU_t;
 
+void Throw(const char * __restrict__ LogMSG,...);
+
 results mem_write(memory *mem, int_t address, char_t *data);
 int_t TernaryAdd(int_t X, int_t Y, bool int12);
 int_t D2T_conversion(int8_t number, bool int12);
+
 void ProgramLoader(memory *mem);

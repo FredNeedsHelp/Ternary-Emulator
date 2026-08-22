@@ -1,54 +1,151 @@
 //Scrappy Striker Program Loader (SSPL)
-
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <ctype.h>
 #include "scrappy_striker.h"
 
 FILE *tasm_file = NULL;
 
 op_codes LookUpTable(char *token)
 {
-        if(strcmp(token, "add") == 0)
-                return add;
-        if(strcmp(token, "sub") == 0)
-                return sub;
-        if(strcmp(token, "jump") == 0)
-                return jmp;
-        if(strcmp(token, "load") == 0)
-                return load;
-        if(strcmp(token, "store") == 0)
-                return store;
-        if(strcmp(token, "move") == 0)
-                return move;
-        if(strcmp(token, "cmp") == 0)
-                return cmp;
-        if(strcmp(token, "max") == 0)
-                return max;
-        if(strcmp(token, "min") == 0)
-                return min;
-        if(strcmp(token, "flip") == 0)
-                return flp;
-        if(strcmp(token, "quit") == 0)
-                return quit;
-        if(strcmp(token, ";") == 0)
-                return skip;
+        if(strcmp(token, "add") == 0) return add;                
+        if(strcmp(token, "sub") == 0) return sub;                
+        if(strcmp(token, "jump") == 0) return jmp;                
+        if(strcmp(token, "load") == 0) return load;                
+        if(strcmp(token, "store") == 0) return store;                
+        if(strcmp(token, "move") == 0) return move;                
+        if(strcmp(token, "cmp") == 0) return cmp;                
+        if(strcmp(token, "max") == 0) return max;                
+        if(strcmp(token, "min") == 0) return min;                
+        if(strcmp(token, "flip") == 0) return flp;               
+        if(strcmp(token, "quit") == 0) return quit;     
+        if(strcmp(token, "set") == 0) return set;          
+        if(strcmp(token, ";") == 0) return skip;
+        if(strcmp(token, "halt") == 0) return halt;  
+        return Unknown_Halt;
+}
 
-        return halt; //Unknown Instruction
+int Parse4Reg(char *buffer)//hard coded for 3 registers, will change later to be dynamic with the register_count definition
+{
+        if(strstr(buffer, "R0") != NULL)
+        {
+                return 0;
+        }
+        else if(strstr(buffer, "R1") != NULL)
+        {
+                return 1;
+        }
+        else if(strstr(buffer, "R2") != NULL)
+        {
+                return 2;
+        }
+        else return -1;
+}
+
+void WriteMemTASM(memory *mem, int_t *address, char_t *data)
+{
+        mem_write(mem, *address, data);
+        *address = TernaryAdd(*address, D2T_conversion(1, true), true);
+}
+
+void C2T_conversion(char number, char_t rs) //Decimal to ternary conversion
+{
+        memset(rs, 0, sizeof(char_t));
+        int i = 0;
+
+        while(number != 0)
+        {
+                if(i == 5) {break;} else if(i > 5) {Throw("Attempted to overflow; C2T");}
+
+                int8_t q = number / 3;
+                int8_t r = number % 3;
+
+                switch (r)
+                        {
+                                case 0:
+                                        rs[i] = 0;
+                                        break;
+                                case 1: 
+                                        rs[i] = 1;
+                                        break;
+                                case 2:
+                                        rs[i] = -1;
+                                        q++;
+                                        break;
+                                default:
+                                        Throw("Error converting to Trits");
+                                        break;
+                        }
+
+                number = q;
+                i++;
+        }
+
+        return;
+}
+
+void RegEncoder(memory *mem, char *dst, char *src, int_t *address) //Parses for Register and then encodes it into memory
+{
+        int reg = 0, reg1 = 0, reg2 = 0;
+        reg = Parse4Reg(dst);
+        if(src != NULL) {reg1 = Parse4Reg(src);} else {reg1 = 0;}
+        if(reg == -1 || (reg1 == -1 && src != NULL)) {Throw("No Valid Register Found");}
+        char_t packed = tern_char_zero;
+        C2T_conversion((reg + reg1 * register_count), packed);                             
+        WriteMemTASM(mem, address, &packed);
+}
+
+//Takes any number that is present after the register/op, 
+//used for jmp to get the address and set to get the value.
+void Number2Mem(memory *mem, char *buffer, int_t *address) 
+{
+        int i = 0;
+        int number = 0;
+        
+        while(buffer[i] != '\0')
+        {
+                if(!isdigit(buffer[i]) || ( i > 0 && isalpha(buffer[i - 1]))) {i++; continue;}
+                
+                int numb = 0;
+
+                while(isdigit(buffer[i]))
+                {
+                        numb = numb * 10 + (buffer[i] - '0');
+                        i++;
+                }
+
+                if(!isalpha(buffer[i])) 
+                {
+                        number = numb;
+                        break;
+                } 
+        }
+
+        char_t temp = tern_char_zero;
+        C2T_conversion(number, temp);
+        WriteMemTASM(mem, address, &temp);
+        return;
 }
 
 void ProgramLoader(memory *mem)
 {
-        if(!(tasm_file = fopen("test.tasm", "r"))) {printf("No Input File detected");} //add input for the file!
+        if(!(tasm_file = fopen("test.tasm", "r"))) {Throw("No Input File detected");} //add input for the file!
           
-        char buffer[243]; //file size limit, 3^5 = 243
+        char buffer[243]; //line size limit, 3^5 = 243
         int_t address = tern_int_zero;
 
+        //int z = 0;
+
         while(fgets(buffer, sizeof(buffer), tasm_file))
-        {       
-                char *op = strtok(buffer, " \t \n");
-                char *numb = strtok(NULL, " \t\n");
-                char *regs = strtok(NULL, " \t\n");
+        {      
+                //printf("Iteration: %d\n", z++);
+                
+                char *op = strtok(buffer, " \t\r\n");
+                char *numb = strtok(NULL, " \t\r\n");
+                char *regs = strtok(NULL, " \t\r\n");
+                char_t code = tern_char_zero;
+
                 if(!op) continue;
 
                 while(op != NULL)
@@ -57,58 +154,85 @@ void ProgramLoader(memory *mem)
 
                         switch (inst)
                         {
+                                case set:   
+                                        C2T_conversion(set, code);
+                                        WriteMemTASM(mem, &address, &code);
+                                        RegEncoder(mem, numb, NULL, &address);
+                                        Number2Mem(mem, regs, &address);
+                                        break;
+
                                 case add:
-                                        mem_write(mem, address, add);
-                                        address = TernaryAdd(address, D2T_conversion(1, true), true);
+                                        C2T_conversion(add, code);
+                                        WriteMemTASM(mem, &address, &code);
+                                        RegEncoder(mem, numb, regs, &address);
                                         break;
                                 case sub:
-                                        mem_write(mem, address, sub);
-                                        address = TernaryAdd(address, D2T_conversion(1, true), true);
+                                        C2T_conversion(sub, code);
+                                        WriteMemTASM(mem, &address, &code);
+                                        RegEncoder(mem, numb, regs, &address);
                                         break;
                                 case load:
-                                        mem_write(mem, address, load);
-                                        address = TernaryAdd(address, D2T_conversion(1, true), true);
+                                        C2T_conversion(load, code);
+                                        WriteMemTASM(mem, &address, &code);
+                                        RegEncoder(mem, numb, NULL, &address);
+                                        Number2Mem(mem, regs, &address);
+                                        //Add Here Memory Address 
                                         break;
                                 case store:
-                                        mem_write(mem, address, store);
-                                        address = TernaryAdd(address, D2T_conversion(1, true), true);
+                                        C2T_conversion(store, code);
+                                        WriteMemTASM(mem, &address, &code);
+                                        RegEncoder(mem, numb, NULL, &address);
+                                        Number2Mem(mem, regs, &address);        
+                                        //Add Here Memory Address 
                                         break;
                                 case jmp:
-                                        mem_write(mem, address, jmp);
-                                        address = TernaryAdd(address, D2T_conversion(1, true), true);
+                                        C2T_conversion(jmp, code);
+                                        WriteMemTASM(mem, &address, &code);
+                                        Number2Mem(mem, numb, &address);
+                                        //Parse for Address
                                         break;
                                 case move:
-                                        mem_write(mem, address, move);
-                                        address = TernaryAdd(address, D2T_conversion(1, true), true);
+                                        C2T_conversion(move, code);
+                                        WriteMemTASM(mem, &address, &code);
+                                        RegEncoder(mem, numb, regs, &address);
                                         break;
                                 case flp:
-                                        mem_write(mem, address, flp);
-                                        address = TernaryAdd(address, D2T_conversion(1, true), true);
+                                        C2T_conversion(flp, code);
+                                        WriteMemTASM(mem, &address, &code);
+                                        RegEncoder(mem, numb, NULL, &address);
                                         break;
                                 case cmp:
-                                        mem_write(mem, address, cmp);
-                                        address = TernaryAdd(address, D2T_conversion(1, true), true);
+                                        C2T_conversion(cmp, code);
+                                        WriteMemTASM(mem, &address, &code);
+                                        RegEncoder(mem, numb, regs, &address);
                                         break;
                                 case max:
-                                        mem_write(mem, address, max);
-                                        address = TernaryAdd(address, D2T_conversion(1, true), true);
+                                        C2T_conversion(max, code);
+                                        WriteMemTASM(mem, &address, &code);
+                                        RegEncoder(mem, numb, regs, &address);
                                         break;
                                 case min:
-                                        mem_write(mem, address, min);
-                                        address = TernaryAdd(address, D2T_conversion(1, true), true);
+                                        C2T_conversion(min, code);
+                                        WriteMemTASM(mem, &address, &code);
+                                        RegEncoder(mem, numb, regs, &address);
                                         break;
                                 case skip:
-                                        mem_write(mem, address, skip);
-                                        address = TernaryAdd(address, D2T_conversion(1, true), true);
-                                        break;
+                                        op = NULL; //Skip the Line
+                                        continue;
                                 case halt:
-                                        mem_write(mem, address, halt);
-                                        address = TernaryAdd(address, D2T_conversion(1, true), true);
-                                        break;                        
+                                        C2T_conversion(halt, code);
+                                        WriteMemTASM(mem, &address, &code);
+                                        break;      
+                                case quit:
+                                        C2T_conversion(quit, code);
+                                        WriteMemTASM(mem, &address, &code);
+                                        break;                   
                                 default:
-                                        printf("Error Program Loader, unable to store instruction into memory");
+                                        Throw("Error Program Loader, unable to store instruction into memory\n");
                                         break;
                         }
+
+                        op = strtok(NULL, " \t\r\n");
                 }
         }
 }

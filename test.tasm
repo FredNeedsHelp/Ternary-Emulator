@@ -1,0 +1,6 @@
+; Simple Scrappy Striker test
+
+set R0 5
+set R1 5
+add R0 R1
+quit

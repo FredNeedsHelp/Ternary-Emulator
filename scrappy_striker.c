@@ -24,7 +24,8 @@ results t_move(CPU_t *cpu, int_t destination, int_t source1);
 results store_mem(CPU_t *cpu, int_t destination, memory *mem, int_t memoryAddress);
 void CPU_status_end(CPU_t cpu, results rs);
 
-void Throw(const char * __restrict__ LogMSG,...);
+void PrintT(trit *arr, int length);
+void DUMP(CPU_t cpu, memory mem);
 
 int main(void)
 {
@@ -32,11 +33,37 @@ int main(void)
         CPU_t cpu;
         if(CPU_reset(&cpu, &mem) != success) {Throw("CPU failed to iniatlise");}
 
+        //Add Program Loader Here!
+        ProgramLoader(&mem);
+
         results rs = CPU_execute(&cpu, &mem, D2T_conversion(27, false));
         if(rs != success) {Throw("CPU failed to execute");}
         CPU_status_end(cpu, rs);
 
+        DUMP(cpu, mem);
+
         return 0;
+}
+
+void DUMP(CPU_t cpu, memory mem) //DUMPS ALL MEMORY AND CPU STATES
+{
+        printf("\n\n- - - - - - - DUMP LOG OF EMULATOR - - - - - - -\n\n");
+
+        //Prints Out Memory & CPU
+        for(int i = 0; i < MEMORY_SIZE; i++)
+        {
+                printf("RAM[%d]:", i);
+                printf("%d\n", T2C(mem.Data[i]));
+        }
+
+        printf("\nPointers: "); printf("%d", T2D_converter(cpu.pointer, true));
+        printf("\nStack: ");    printf("%d", T2D_converter(cpu.stack, true));
+
+        for(int i = 0; i < register_count; i++)
+        {
+                printf("\nRegister %d: ", i);
+                printf("%d", T2D_converter(cpu.registers[i], false));
+        }
 }
 
 void CPU_status_end(CPU_t cpu, results rs)
@@ -73,12 +100,20 @@ results CPU_execute(CPU_t *cpu, memory *mem, int_t clock_cycle) //clock cycle ac
                 printf("%d\n", T2D_converter(clock_cycle, false));
 
                 unsigned char inst2bin = T2C(instruction);
-                int_t reg_dst = tern_int_zero, reg_src = tern_int_zero, memoryAddress = tern_int_zero;
+                int_t reg_dst = tern_int_zero, reg_src = tern_int_zero, memoryAddress = tern_int_zero, set_number = tern_int_zero;
                 char_t address = tern_char_zero;
                 int dst_index = 0, src_index = 0; 
 
                 switch(inst2bin)
                 {
+                        case set:
+                                GetReg(cpu, mem, &clock_cycle, &reg_dst, &reg_src);  
+                                dst_index = T2D_converter(reg_dst, false);
+                                TernFetch(cpu, *mem, &clock_cycle, &address);
+                                memcpy(set_number.int9, address, sizeof(char_t));
+                                cpu->registers[dst_index] = set_number;
+                                break;
+
                         case add:  
                                 GetReg(cpu, mem, &clock_cycle, &reg_dst, &reg_src);  
                                 dst_index = T2D_converter(reg_dst, false), 
@@ -170,8 +205,8 @@ void TernFetch(CPU_t *cpu, memory mem, int_t *clock_cycle, char_t *data)
 
 results CPU_reset(CPU_t *cpu, memory *mem)
 {
-        memset(mem, 0, sizeof(char_t)); //iniatlise RAM aka ZERO out
-        memset(cpu, 0, sizeof(int_t));
+        memset(mem, 0, sizeof(memory)); //iniatlise RAM aka ZERO out
+        memset(cpu, 0, sizeof(CPU_t));
 
         //just in case, btw.
         cpu->halt = false;
