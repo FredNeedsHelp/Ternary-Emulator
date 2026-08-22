@@ -9,21 +9,25 @@ to build the program use gcc: gcc scrappy_striker.c SS_PLoader.c -o scrappy_stri
 
 ISA to write your own TASM (Ternary Assembly) code:
 
-add = 1, //Add between 2 regs
-sub = 2,  //subtract between 2 regs
-jmp = 3,  //jump to a line of code
-load = 4, //load from memory
-store = 5, //store in memory
-move = 6, //move between registries (✓)
-shr = 7, //shift trit to the right, NOT IMPLEMENTED YET!
-shl = 8, //shift trit to the left, NOT IMPLEMENTED YET!
-cmp = 9, //compare
-max = 10, //NOT IMPLEMENTED YET, USE CMP
-min = 11, //NOT IMPLEMENTED YET, USE CMP
-flp = 12, //this is negative op, but due to naming conventions. it will be called flip to flip the numbers "polarity" (✓)
-set = 13, //Set a number to a register.
-quit = 0, //Quits the program. Not Recommended if your going to use DUMP
-halt = 26, //halt stops the CPU immediately  
-Unknown_Halt = -1 
+
+| Opcode | Value | Description | Notes |
+| :--- | :---: | :--- | :--- |
+| `add` | 1 | Add between 2 regs | implemented |
+| `sub` | 2 | Subtract between 2 regs | implemented |
+| `jmp` | 3 | Jump to a line of code | implemented |
+| `load` | 4 | Load from memory | implemented |
+| `store` | 5 | Store in memory | implemented |
+| `move` | 6 | Move between registries | implemented |
+| `shr` | 7 | Shift trit to the right | NOT IMPLEMENTED YET! |
+| `shl` | 8 | Shift trit to the left | NOT IMPLEMENTED YET! |
+| `cmp` | 9 | Compare between 2 regs| implemented |
+| `max` | 10 | Find maximum between 2 regs| NOT IMPLEMENTED YET, USE CMP |
+| `min` | 11 | Find minimum between 2 regs| NOT IMPLEMENTED YET, USE CMP |
+| `flp` | 12 | Negative op, named flip to change number "polarity" | implemented |
+| `set` | 13 | Set a number to a register | implemented |
+| `quit` | 0 | Quits the program | Not recommended if using DUMP |
+| `halt` | 26 | Halt stops the CPU immediately | implemented |
+| `Unknown_Halt` | -1 | Error/Unknown Halt condition | System state |
+
 
 Use ; to comment in your code, do not use it after valid code/instruction, the assembler does not deal with that type of circumstances yet.
