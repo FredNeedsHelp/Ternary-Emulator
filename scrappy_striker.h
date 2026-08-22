@@ -81,4 +81,4 @@ results mem_write(memory *mem, int_t address, char_t *data);
 int_t TernaryAdd(int_t X, int_t Y, bool int12);
 int_t D2T_conversion(int8_t number, bool int12);
 
-void ProgramLoader(memory *mem);
+void ProgramLoader(memory *mem, char *tasm_name);

@@ -24,7 +24,6 @@ results t_move(CPU_t *cpu, int_t destination, int_t source1);
 results store_mem(CPU_t *cpu, int_t destination, memory *mem, int_t memoryAddress);
 void CPU_status_end(CPU_t cpu, results rs);
 
-void PrintT(trit *arr, int length);
 void DUMP(CPU_t cpu, memory mem);
 
 int main(void)
@@ -33,8 +32,10 @@ int main(void)
         CPU_t cpu;
         if(CPU_reset(&cpu, &mem) != success) {Throw("CPU failed to iniatlise");}
 
-        //Add Program Loader Here!
-        ProgramLoader(&mem);
+        char *TASM;
+        printf("TASM file name: ");
+        scanf("%s", TASM);
+        ProgramLoader(&mem, TASM);
 
         results rs = CPU_execute(&cpu, &mem, D2T_conversion(27, false));
         if(rs != success) {Throw("CPU failed to execute");}

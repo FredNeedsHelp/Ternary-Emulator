@@ -128,9 +128,9 @@ void Number2Mem(memory *mem, char *buffer, int_t *address)
         return;
 }
 
-void ProgramLoader(memory *mem)
+void ProgramLoader(memory *mem, char *tasm_name)
 {
-        if(!(tasm_file = fopen("test.tasm", "r"))) {Throw("No Input File detected");} //add input for the file!
+        if(!(tasm_file = fopen(tasm_name, "r"))) {Throw("No Input File detected");} //add input for the file!
           
         char buffer[243]; //line size limit, 3^5 = 243
         int_t address = tern_int_zero;
