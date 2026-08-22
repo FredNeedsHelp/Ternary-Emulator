@@ -1,9 +1,11 @@
 # Ternary-Emulator
-This is the basic core code for a ternary emulator made in C.
-
+This is the basic core code for a ternary emulator made in C. Nicknamed Scrappy Striker, because im going to try build a ternary 
+computer with scraps and it will strike the world with its awesomeness. 
+- - -
 Im happy to announce that the Program Loader is complete, and now you can write your own custom TASM (Ternary Assembly) files
-to make your own program. Just simply name the file test.tasm and put it next to the built program.
-(I'll Add custom inputs when running the program for the tasm files next commit, I just want to go to sleep)
+to make your own program. 
+
+To load the program into the emulator make sure to provide a directory or place the file next to the exe.
 
 to build the program use gcc: gcc scrappy_striker.c SS_PLoader.c -o scrappy_striker
 
