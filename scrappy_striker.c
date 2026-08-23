@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <windows.h>
+
 #include "scrappy_striker.h"
 
 //prototype funcs
@@ -25,22 +27,24 @@ results store_mem(CPU_t *cpu, int_t destination, memory *mem, int_t memoryAddres
 void CPU_status_end(CPU_t cpu, results rs);
 
 void DUMP(CPU_t cpu, memory mem);
+LARGE_INTEGER freq, start, end;
 
 int main(void)
 {
+        char TASM[243];
+        printf("TASM file name: ");
+        scanf("%s", TASM);
+
+        QueryPerformanceFrequency(&freq);
+        QueryPerformanceCounter(&start);
+
         memory mem;
         CPU_t cpu;
         if(CPU_reset(&cpu, &mem) != success) {Throw("CPU failed to iniatlise");}
-
-        char *TASM[243];
-        printf("TASM file name: ");
-        scanf("%s", TASM);
         ProgramLoader(&mem, TASM);
-
         results rs = CPU_execute(&cpu, &mem, D2T_conversion(27, false));
         if(rs != success) {Throw("CPU failed to execute");}
         CPU_status_end(cpu, rs);
-
         DUMP(cpu, mem);
 
         return 0;
@@ -65,6 +69,11 @@ void DUMP(CPU_t cpu, memory mem) //DUMPS ALL MEMORY AND CPU STATES
                 printf("\nRegister %d: ", i);
                 printf("%d", T2D_converter(cpu.registers[i], false));
         }
+
+        QueryPerformanceCounter(&end);
+
+        double time_taken = (double)(end.QuadPart - start.QuadPart) * 1000 / (double)freq.QuadPart;
+        printf("\nCPU Execution Time: %.4f ms\n", time_taken);
 }
 
 void CPU_status_end(CPU_t cpu, results rs)
@@ -261,7 +270,7 @@ results load_mem(CPU_t *cpu, int_t destination, memory *mem, int_t memoryAddress
 {
         int add_temp = T2D_converter(memoryAddress, true);
         if(add_temp < 0 || add_temp >= MEMORY_SIZE) {return invalid_memory;}
-        
+
         int rg_count = T2D_converter(destination, false);
         //*cpu->registers[rg_count].int9 = *mem->Data[T2D_converter(memoryAddress, false)];
         memcpy(cpu->registers[rg_count].int9, mem->Data[T2D_converter(memoryAddress, true)], sizeof(char_t));
