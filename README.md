@@ -2,6 +2,12 @@
 This is the basic core code for a ternary emulator made in C. Nicknamed Scrappy Striker, because im going to try build a ternary 
 computer with scraps and it will strike the world with its awesomeness. 
 - - -
+I would like to note that I have imposed a few limitations on the emulator, such as the ram being 27 trits long even if the memory address can support much more. same also applies to the registries.
+
+if you would like to change them, you can find the definitions in the scrappy_striker header (scrappy_striker.h).
+
+This is an early prototype, many bugs will be present and I have only tested the ALU because that's what I need.
+
 Im happy to announce that the Program Loader is complete, and now you can write your own custom TASM (Ternary Assembly) files
 to make your own program. 
 
