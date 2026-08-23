@@ -32,7 +32,7 @@ int main(void)
         CPU_t cpu;
         if(CPU_reset(&cpu, &mem) != success) {Throw("CPU failed to iniatlise");}
 
-        char *TASM;
+        char *TASM[243];
         printf("TASM file name: ");
         scanf("%s", TASM);
         ProgramLoader(&mem, TASM);
@@ -248,6 +248,9 @@ results t_move(CPU_t *cpu, int_t destination, int_t source1) //move function to 
 
 results store_mem(CPU_t *cpu, int_t destination, memory *mem, int_t memoryAddress)
 {
+        int add_temp = T2D_converter(memoryAddress, true);
+        if(add_temp < 0 || add_temp >= MEMORY_SIZE) {return invalid_memory;}
+
         int rg_count = T2D_converter(destination, false);
         memcpy(mem->Data[T2D_converter(memoryAddress, true)], cpu->registers[rg_count].int9, sizeof(char_t));
         //*mem->Data[T2D_converter(memoryAddress, false)] = cpu->registers[rg_count].int9;
@@ -256,6 +259,9 @@ results store_mem(CPU_t *cpu, int_t destination, memory *mem, int_t memoryAddres
 
 results load_mem(CPU_t *cpu, int_t destination, memory *mem, int_t memoryAddress)
 {
+        int add_temp = T2D_converter(memoryAddress, true);
+        if(add_temp < 0 || add_temp >= MEMORY_SIZE) {return invalid_memory;}
+        
         int rg_count = T2D_converter(destination, false);
         //*cpu->registers[rg_count].int9 = *mem->Data[T2D_converter(memoryAddress, false)];
         memcpy(cpu->registers[rg_count].int9, mem->Data[T2D_converter(memoryAddress, true)], sizeof(char_t));
