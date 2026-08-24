@@ -176,11 +176,19 @@ results CPU_execute(CPU_t *cpu, memory *mem, int_t clock_cycle) //clock cycle ac
                                 break;
 
                         case shl:
-                                Throw("Shift_Left has not been added yet\nif your seeing this, this might be memory corruption!");
+                                GetReg(cpu, mem, &clock_cycle, &reg_dst, NULL);
+                                dst_index = T2D_converter(reg_dst, false);
+                                TernFetch(cpu, *mem, &clock_cycle, &address);
+                                memcpy(set_number.int9, address, sizeof(char_t));
+                                shift(&cpu->registers[dst_index], set_number, true, false);
                                 break;
 
                         case shr:
-                                Throw("Shift_Right has not been added yet\nif your seeing this, this might be memory corruption!");
+                                GetReg(cpu, mem, &clock_cycle, &reg_dst, NULL);
+                                dst_index = T2D_converter(reg_dst, false);
+                                TernFetch(cpu, *mem, &clock_cycle, &address);
+                                memcpy(set_number.int9, address, sizeof(char_t));
+                                shift(&cpu->registers[dst_index], set_number, false, false);
                                 break;
 
                         case quit:
