@@ -27,17 +27,19 @@ ISA to write your own TASM (Ternary Assembly) code:
 | `load` | 4 | Load from memory | implemented |
 | `store` | 5 | Store in memory | implemented |
 | `move` | 6 | Move between registries | implemented |
-| `shr` | 7 | Shift trit to the right | NOT IMPLEMENTED YET! |
-| `shl` | 8 | Shift trit to the left | NOT IMPLEMENTED YET! |
+| `shr` | 7 | Shift trit to the right | implemented |
+| `shl` | 8 | Shift trit to the left | implemented |
 | `cmp` | 9 | Compare between 2 regs| implemented |
 | `max` | 10 | Find maximum between 2 regs| NOT IMPLEMENTED YET, USE CMP |
 | `min` | 11 | Find minimum between 2 regs| NOT IMPLEMENTED YET, USE CMP |
 | `flp` | 12 | Negative op, named flip to change number "polarity" | implemented |
 | `set` | 13 | Set a number to a register | implemented |
+| `mlp` | 14 | Multiply between 2 regs | NOT IMPLEMENTED YET |
+| `dvd` | 15 | Divide between 2 regs | NOT IMPLEMENTED YET |
 | `quit` | 0 | Quits the program | Not recommended if using DUMP |
 | `halt` | 26 | Halt stops the CPU immediately | implemented |
-| `Unknown_Halt` | -1 | Error/Unknown Halt condition | System state |
 
+Any Negative is value is controlled by the system! if any negative op codes appear, your cooked lollll. (Check RAM DUMP to see op codes saved in MEM)
 
 Use ; to comment in your code, anything and everything after the semicolon will not be interpreted by the assembler/parser/Program Loader
 
