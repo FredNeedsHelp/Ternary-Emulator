@@ -22,7 +22,7 @@ ISA to write your own TASM (Ternary Assembly) code:
 | :--- | :---: | :--- | :--- |
 | `add` | 1 | Add between 2 regs | implemented |
 | `sub` | 2 | Subtract between 2 regs | implemented |
-| `jmp` | 3 | Jump to a line of code | implemented |
+| `jmp` | 3 | Jump to a line of code | kinda implemented |
 | `load` | 4 | Load from memory | implemented |
 | `store` | 5 | Store in memory | implemented |
 | `move` | 6 | Move between registries | implemented |
@@ -39,3 +39,5 @@ ISA to write your own TASM (Ternary Assembly) code:
 
 
 Use ; to comment in your code, do not use it after valid code/instruction, the assembler does not deal with that type of circumstances yet.
+
+Note: After some testing, some flow control seems to be unaccounted for. Ill update the jump to check the flag. Jmp works statically but will not change depending on compare flag.
