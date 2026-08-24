@@ -8,6 +8,8 @@ if you would like to change them, you can find the definitions in the scrappy_st
 
 This is an early prototype, many bugs will be present and I have only tested the ALU because that's what I need.
 
+**Notes, Directions, and Extra**:
+
 Im happy to announce that the Program Loader is complete, and now you can write your own custom TASM (Ternary Assembly) files
 to make your own program. 
 
@@ -17,12 +19,11 @@ to build the program use gcc: gcc scrappy_striker.c SS_PLoader.c -o scrappy_stri
 
 ISA to write your own TASM (Ternary Assembly) code:
 
-
 | Opcode | Value | Description | Notes |
 | :--- | :---: | :--- | :--- |
 | `add` | 1 | Add between 2 regs | implemented |
 | `sub` | 2 | Subtract between 2 regs | implemented |
-| `jmp` | 3 | Jump to a line of code | kinda implemented |
+| `jmp` | 3 | Jump to a line of code | implemented |
 | `load` | 4 | Load from memory | implemented |
 | `store` | 5 | Store in memory | implemented |
 | `move` | 6 | Move between registries | implemented |
@@ -38,6 +39,6 @@ ISA to write your own TASM (Ternary Assembly) code:
 | `Unknown_Halt` | -1 | Error/Unknown Halt condition | System state |
 
 
-Use ; to comment in your code, do not use it after valid code/instruction, the assembler does not deal with that type of circumstances yet.
+Use ; to comment in your code, anything and everything after the semicolon will not be interpreted by the assembler/parser/Program Loader
 
-Note: After some testing, some flow control seems to be unaccounted for. Ill update the jump to check the flag. Jmp works statically but will not change depending on compare flag.
+Control flow is fully working! Check the test.TASM file to see how it works. should be quite straightforward.
