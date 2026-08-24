@@ -1,8 +1,12 @@
-#include <stdbool.h>
+#ifndef core_tern_header
+#define core_tern_header
+
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
+#include <stdarg.h>
 
 #define register_count 3
 #define MEMORY_SIZE 27 //celss of data, at moment 3^3=27. 27 * char_t = 135 trits of data.
@@ -87,7 +91,14 @@ typedef struct
 void Throw(const char * __restrict__ LogMSG,...);
 
 results mem_write(memory *mem, int_t address, char_t *data);
-int_t TernaryAdd(int_t X, int_t Y, bool int12);
-int_t D2T_conversion(int8_t number, bool int12);
 
+int T2D_converter(int_t TernNumber, bool int12);
+int_t TernarySub(int_t X, int_t Y, bool int12);
+int_t TernaryAdd(int_t X, int_t Y, bool int12);
+int_t flip(int_t X, bool int12);
+char T2C(char_t ternary_char);
+void C2T_conversion(char number, char_t rs);
+int_t D2T_conversion(int8_t number, bool int12);
 void ProgramLoader(memory *mem, char *tasm_name);
+
+#endif

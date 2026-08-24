@@ -1,5 +1,4 @@
 //Scrappy Striker Program Loader (SSPL)
-#include <ctype.h>
 #include "scrappy_striker.h"
 
 FILE *tasm_file = NULL;
@@ -55,41 +54,6 @@ void WriteMemTASM(memory *mem, int_t *address, char_t *data)
         *address = TernaryAdd(*address, D2T_conversion(1, true), true);
 }
 
-void C2T_conversion(char number, char_t rs) //Decimal to ternary conversion
-{
-        memset(rs, 0, sizeof(char_t));
-        int i = 0;
-
-        while(number != 0)
-        {
-                if(i == 5) {break;} else if(i > 5) {Throw("Attempted to overflow; C2T");}
-
-                int8_t q = number / 3;
-                int8_t r = number % 3;
-
-                switch (r)
-                        {
-                                case 0:
-                                        rs[i] = 0;
-                                        break;
-                                case 1: 
-                                        rs[i] = 1;
-                                        break;
-                                case 2:
-                                        rs[i] = -1;
-                                        q++;
-                                        break;
-                                default:
-                                        Throw("Error converting to Trits");
-                                        break;
-                        }
-
-                number = q;
-                i++;
-        }
-
-        return;
-}
 
 void RegEncoder(memory *mem, char *dst, char *src, int_t *address) //Parses for Register and then encodes it into memory
 {
