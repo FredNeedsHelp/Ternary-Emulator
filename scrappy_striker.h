@@ -5,8 +5,11 @@
 #include <string.h>
 
 #define register_count 3
-#define MEMORY_SIZE 27 //trits of data, at moment 3^3=27
+#define MEMORY_SIZE 27 //celss of data, at moment 3^3=27. 27 * char_t = 135 trits of data.
 #define ArraySize(arr) (sizeof(arr) / sizeof(arr[0]))
+#define CPU_CYCLE_Default 27
+
+extern int CPUcycle;
 
 typedef enum
 {
@@ -50,10 +53,10 @@ typedef enum
         set = 13,
         mlp = 14, //Not Added 
         dvd = 15, //Not Added
-        jmpif = 16, //Not Added
         quit = 0,
         halt = MEMORY_SIZE - 1, //halt should be the max mem.(✓)
 
+        cyc_def = MEMORY_SIZE - 3,
         skip = MEMORY_SIZE - 2,
         Unknown_Halt = -1 
 } op_codes;

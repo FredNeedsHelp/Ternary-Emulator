@@ -18,8 +18,9 @@ op_codes LookUpTable(char *token)
         if(strcmp(token, "flip") == 0) return flp;               
         if(strcmp(token, "quit") == 0) return quit;     
         if(strcmp(token, "set") == 0) return set;          
-        if(strcmp(token, ";") == 0) return skip;
+        if(token[0] == ';') return skip;
         if(strcmp(token, "halt") == 0) return halt;  
+        if(strcmp(token, "CYC") == 0) return cyc_def;
         return Unknown_Halt;
 }
 
@@ -101,14 +102,9 @@ void RegEncoder(memory *mem, char *dst, char *src, int_t *address) //Parses for 
         WriteMemTASM(mem, address, &packed);
 }
 
-//Takes any number that is present after the register/op, 
-//used for jmp to get the address and set to get the value.
-void Number2Mem(memory *mem, char *buffer, int_t *address) 
+int Parse4Number(char *buffer)
 {
-        int i = 0;
-        int number = 0;
-        
-        while(buffer[i] != '\0')
+        for(int i = 0; buffer[i] != '\0'; i++)
         {
                 if(!isdigit(buffer[i]) || ( i > 0 && isalpha(buffer[i - 1]))) {i++; continue;}
                 
@@ -122,15 +118,28 @@ void Number2Mem(memory *mem, char *buffer, int_t *address)
 
                 if(!isalpha(buffer[i])) 
                 {
-                        number = numb;
-                        break;
+                        return numb;
                 } 
         }
+}
 
+//Takes any number that is present after the register/op, 
+//used for jmp to get the address and set to get the value.
+void Number2Mem(memory *mem, char *buffer, int_t *address) 
+{
+        int number = Parse4Number(buffer);
         char_t temp = tern_char_zero;
         C2T_conversion(number, temp);
         WriteMemTASM(mem, address, &temp);
         return;
+}
+
+trit State2Flag(memory *mem, char *buffer)
+{       
+        if(strstr(buffer, "NEG")) return neg;
+        if(strstr(buffer, "POS")) return pos;
+        if(strstr(buffer, "NET")) return net;
+        return halt;
 }
 
 void ProgramLoader(memory *mem, char *tasm_name)
@@ -149,7 +158,7 @@ void ProgramLoader(memory *mem, char *tasm_name)
                 char *op = strtok(buffer, " \t\r\n");
                 char *numb = strtok(NULL, " \t\r\n");
                 char *regs = strtok(NULL, " \t\r\n");
-                char_t code = tern_char_zero;
+                char_t code = tern_char_zero, flag = tern_char_zero;
 
                 if(!op) continue;
 
@@ -159,6 +168,11 @@ void ProgramLoader(memory *mem, char *tasm_name)
 
                         switch (inst)
                         {
+                                case cyc_def:
+
+                                        CPUcycle = Parse4Number(numb);
+                                        break;
+
                                 case set:   
                                         C2T_conversion(set, code);
                                         WriteMemTASM(mem, &address, &code);
@@ -190,7 +204,9 @@ void ProgramLoader(memory *mem, char *tasm_name)
                                 case jmp:
                                         C2T_conversion(jmp, code);
                                         WriteMemTASM(mem, &address, &code);
-                                        Number2Mem(mem, numb, &address);
+                                        flag[0] = State2Flag(mem, numb);
+                                        WriteMemTASM(mem, &address, &flag);
+                                        Number2Mem(mem, regs, &address);
                                         break;
                                 case move:
                                         C2T_conversion(move, code);

@@ -22,6 +22,7 @@ void CPU_status_end(CPU_t cpu, results rs);
 
 void DUMP(CPU_t cpu, memory mem);
 LARGE_INTEGER freq, start, end;
+int CPUcycle = CPU_CYCLE_Default;
 
 int main(void)
 {
@@ -36,7 +37,7 @@ int main(void)
         CPU_t cpu;
         if(CPU_reset(&cpu, &mem) != success) {Throw("CPU failed to iniatlise");}
         ProgramLoader(&mem, TASM);
-        results rs = CPU_execute(&cpu, &mem, D2T_conversion(27, false));
+        results rs = CPU_execute(&cpu, &mem, D2T_conversion(CPUcycle, false));
         if(rs != success) {Throw("CPU failed to execute");}
         CPU_status_end(cpu, rs);
         DUMP(cpu, mem);
@@ -104,7 +105,7 @@ results CPU_execute(CPU_t *cpu, memory *mem, int_t clock_cycle) //clock cycle ac
 
                 unsigned char inst2bin = T2C(instruction);
                 int_t reg_dst = tern_int_zero, reg_src = tern_int_zero, memoryAddress = tern_int_zero, set_number = tern_int_zero;
-                char_t address = tern_char_zero;
+                char_t address = tern_char_zero, flg = tern_char_zero;
                 int dst_index = 0, src_index = 0; 
 
                 switch(inst2bin)
@@ -139,6 +140,8 @@ results CPU_execute(CPU_t *cpu, memory *mem, int_t clock_cycle) //clock cycle ac
                                 break;
                         
                         case jmp:
+                                TernFetch(cpu, *mem, &clock_cycle, &flg);
+                                if(cpu->flag != flg[0]) break;
                                 TernFetch(cpu, *mem, &clock_cycle, &address);
                                 memcpy(memoryAddress.int12, address, sizeof(char_t));
                                 memcpy(cpu->pointer.int12, memoryAddress.int12, sizeof(trit) * 12);

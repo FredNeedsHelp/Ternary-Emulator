@@ -1,6 +1,13 @@
 ; Simple Scrappy Striker test
 
+CYC 50
+
 set R0 5
-set R1 5
+set R1 1
+cmp R0 R1
+jump POS 14
+sub R0 R1
+quit
+
 add R0 R1
 quit
