@@ -1,5 +1,8 @@
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #define register_count 3
 #define MEMORY_SIZE 27 //trits of data, at moment 3^3=27
@@ -45,6 +48,9 @@ typedef enum
         min = 11,
         flp = 12, //this is negative op, but due to naming conventions. it will be called flip to flip the numbers "polarity" (✓)
         set = 13,
+        mlp = 14, //Not Added 
+        dvd = 15, //Not Added
+        jmpif = 16, //Not Added
         quit = 0,
         halt = MEMORY_SIZE - 1, //halt should be the max mem.(✓)
 

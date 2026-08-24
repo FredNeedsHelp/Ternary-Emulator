@@ -1,7 +1,4 @@
 //Scrappy Striker Program Loader (SSPL)
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <ctype.h>
 #include "scrappy_striker.h"
 
@@ -27,20 +24,28 @@ op_codes LookUpTable(char *token)
 }
 
 int Parse4Reg(char *buffer)//hard coded for 3 registers, will change later to be dynamic with the register_count definition
-{
-        if(strstr(buffer, "R0") != NULL)
+{    
+        if(strstr(buffer, "R") != NULL || strstr(buffer, "r") != NULL)
         {
-                return 0;
-        }
-        else if(strstr(buffer, "R1") != NULL)
-        {
-                return 1;
-        }
-        else if(strstr(buffer, "R2") != NULL)
-        {
-                return 2;
-        }
-        else return -1;
+                for(int i = 0; buffer[i] != '\0'; i++)
+                {
+                        if(!isdigit(buffer[i]) || ( i > 0 && isalpha(buffer[i - 1]) && (buffer[i - 1] != 'r' && buffer[i - 1] != 'R'))) {continue;}
+                        
+                        int numb = 0;
+
+                        while(isdigit(buffer[i]))
+                        {
+                                numb = numb * 10 + (buffer[i] - '0');
+                                i++;
+                        }
+
+                        if(!isalpha(buffer[i])) 
+                        {
+                                if(numb > register_count) return -1;
+                                else return numb;
+                        } 
+                }
+        } else return -1;
 }
 
 void WriteMemTASM(memory *mem, int_t *address, char_t *data)
@@ -87,12 +92,12 @@ void C2T_conversion(char number, char_t rs) //Decimal to ternary conversion
 
 void RegEncoder(memory *mem, char *dst, char *src, int_t *address) //Parses for Register and then encodes it into memory
 {
-        int reg = 0, reg1 = 0, reg2 = 0;
-        reg = Parse4Reg(dst);
-        if(src != NULL) {reg1 = Parse4Reg(src);} else {reg1 = 0;}
-        if(reg == -1 || (reg1 == -1 && src != NULL)) {Throw("No Valid Register Found");}
+        int reg_Dst = 0, reg_Src = 0;
+        reg_Dst = Parse4Reg(dst);
+        if(src != NULL) {reg_Src = Parse4Reg(src);} else {reg_Src = 0;}
+        if(reg_Dst == -1 || (reg_Src == -1 && src != NULL)) {Throw("No Valid Register Found");}
         char_t packed = tern_char_zero;
-        C2T_conversion((reg + reg1 * register_count), packed);                             
+        C2T_conversion((reg_Dst + reg_Src * register_count), packed);                             
         WriteMemTASM(mem, address, &packed);
 }
 
@@ -160,7 +165,6 @@ void ProgramLoader(memory *mem, char *tasm_name)
                                         RegEncoder(mem, numb, NULL, &address);
                                         Number2Mem(mem, regs, &address);
                                         break;
-
                                 case add:
                                         C2T_conversion(add, code);
                                         WriteMemTASM(mem, &address, &code);
@@ -176,20 +180,17 @@ void ProgramLoader(memory *mem, char *tasm_name)
                                         WriteMemTASM(mem, &address, &code);
                                         RegEncoder(mem, numb, NULL, &address);
                                         Number2Mem(mem, regs, &address);
-                                        //Add Here Memory Address 
                                         break;
                                 case store:
                                         C2T_conversion(store, code);
                                         WriteMemTASM(mem, &address, &code);
                                         RegEncoder(mem, numb, NULL, &address);
                                         Number2Mem(mem, regs, &address);        
-                                        //Add Here Memory Address 
                                         break;
                                 case jmp:
                                         C2T_conversion(jmp, code);
                                         WriteMemTASM(mem, &address, &code);
                                         Number2Mem(mem, numb, &address);
-                                        //Parse for Address
                                         break;
                                 case move:
                                         C2T_conversion(move, code);

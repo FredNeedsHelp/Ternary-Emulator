@@ -1,11 +1,5 @@
-#include <stdlib.h>
-#include <stdint.h>
 #include <stdarg.h>
-#include <stdio.h>
-#include <string.h>
-
 #include <windows.h>
-
 #include "scrappy_striker.h"
 
 //prototype funcs
@@ -61,8 +55,7 @@ void DUMP(CPU_t cpu, memory mem) //DUMPS ALL MEMORY AND CPU STATES
                 printf("%d\n", T2C(mem.Data[i]));
         }
 
-        printf("\nPointers: "); printf("%d", T2D_converter(cpu.pointer, true));
-        printf("\nStack: ");    printf("%d", T2D_converter(cpu.stack, true));
+        printf("\nPointers: %d\nStack: %d\nFlag: %d", T2D_converter(cpu.pointer, true), T2D_converter(cpu.stack, true), cpu.flag);
 
         for(int i = 0; i < register_count; i++)
         {
@@ -116,6 +109,14 @@ results CPU_execute(CPU_t *cpu, memory *mem, int_t clock_cycle) //clock cycle ac
 
                 switch(inst2bin)
                 {
+                        case dvd:
+                                //Add Code Later
+                                break;
+
+                        case mlp:
+                                //Add Code Later
+                                break;
+
                         case set:
                                 GetReg(cpu, mem, &clock_cycle, &reg_dst, &reg_src);  
                                 dst_index = T2D_converter(reg_dst, false);
