@@ -18,7 +18,9 @@ op_codes LookUpTable(char *token)
         if(strcmp(token, "quit") == 0) return quit;     
         if(strcmp(token, "set") == 0) return set;          
         if(token[0] == ';') return skip;
-        if(strcmp(token, "halt") == 0) return halt;  
+        if(strcmp(token, "halt") == 0) return halt;
+        if(strcmp(token, "shl") == 0) return shl;
+        if(strcmp(token, "shr") == 0) return shr;  
         if(strcmp(token, "CYC") == 0) return cyc_def;
         return Unknown_Halt;
 }
@@ -100,10 +102,10 @@ void Number2Mem(memory *mem, char *buffer, int_t *address)
 
 trit State2Flag(memory *mem, char *buffer)
 {       
-        if(strstr(buffer, "NEG")) return neg;
-        if(strstr(buffer, "POS")) return pos;
-        if(strstr(buffer, "NET")) return net;
-        return halt;
+        if(strstr(buffer, "NEG") || strstr(buffer, "neg")) return neg;
+        if(strstr(buffer, "POS") || strstr(buffer, "pos")) return pos;
+        if(strstr(buffer, "NET") || strstr(buffer, "net")) return net;
+        return halt; //Cant use unknown error nor unknown halt, they both use -1 aka VALID VALUE :sob:
 }
 
 void ProgramLoader(memory *mem, char *tasm_name)
@@ -132,8 +134,21 @@ void ProgramLoader(memory *mem, char *tasm_name)
 
                         switch (inst)
                         {
-                                case cyc_def:
+                                case shr:
+                                        C2T_conversion(shr, code);
+                                        WriteMemTASM(mem, &address, &code);
+                                        RegEncoder(mem, numb, NULL, &address);
+                                        Number2Mem(mem, regs, &address);
+                                        break;
 
+                                case shl:
+                                        C2T_conversion(shl, code);
+                                        WriteMemTASM(mem, &address, &code);
+                                        RegEncoder(mem, numb, NULL, &address);
+                                        Number2Mem(mem, regs, &address);
+                                        break;
+
+                                case cyc_def:
                                         CPUcycle = Parse4Number(numb);
                                         break;
 

@@ -276,3 +276,69 @@ int_t D2T_conversion(int8_t number, bool int12) //Decimal to ternary conversion
 
         return rs;
 }
+
+
+//by par. is int9 and bool int12 only regards of ternary_number. 
+//left bool is just the direction of the shift
+void shift(int_t *ternary_number, int_t by, bool left, bool int12)
+{
+        int by_amount = T2D_converter(by, false);
+
+        if(left)
+        {
+                if(int12)
+                {
+                        for(int i = 0; i < by_amount; i++)
+                        {
+                                for(int x = 11; x > 0; x--)
+                                {
+                                   ternary_number->int12[x] = ternary_number->int12[x - 1];  
+                                }
+
+                                ternary_number->int12[i] = net;
+                        }
+                }
+                else if(!int12)
+                {    
+                        for(int i = 0; i < by_amount; i++)
+                        {
+                                for(int x = 8; x > 0; x--)
+                                {
+                                   ternary_number->int9[x] = ternary_number->int9[x - 1];  
+                                }
+
+                                ternary_number->int9[i] = net;
+                        }
+                }
+        }
+        else if(!left)
+        {
+                if(int12)
+                {
+                        for(int i = 0; i < by_amount; i++)
+                        {
+                                for(int x = 0; x < 11; x++)
+                                {
+                                   ternary_number->int12[x] = ternary_number->int12[x + 1];  
+                                }
+
+                                ternary_number->int12[11 - i] = net;
+                        }
+                }
+                else if(!int12)
+                {    
+                        for(int i = 0; i < by_amount; i++)
+                        {
+                                for(int x = 0; x < 8; x++)
+                                {
+                                   ternary_number->int9[x] = ternary_number->int9[x + 1];  
+                                }
+
+                                ternary_number->int9[8 - i] = net;
+                        }
+                }
+        }
+        
+        double x = T2D_converter(*ternary_number, int12);
+        if(x != (long)x) printf("YOUR SHIFT HAS RESULTED IN A FLOATING-POINT. NOT IMPLEMENTED YET!!");
+}

@@ -2,12 +2,13 @@
 
 CYC 50
 
-set R0 5
-set R1 1
+set R0 26
+set R1 4
 cmp R0 R1
 jump POS 14
 sub R0 R1
 quit
 
 add R0 R1
+shr R0 2
 quit

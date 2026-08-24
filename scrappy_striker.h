@@ -36,6 +36,9 @@ typedef struct
 
 typedef trit char_t[5]; //a custom trit char
 
+
+static const char surprise[] = "How in the flying f*ck did you get this error? this is meant to be unreachable.\npersonally reach to me if you get this";
+
 #define tern_zero (trit)0
 #define tern_int_zero (int_t){0}
 #define tern_char_zero {0}
@@ -100,5 +103,6 @@ char T2C(char_t ternary_char);
 void C2T_conversion(char number, char_t rs);
 int_t D2T_conversion(int8_t number, bool int12);
 void ProgramLoader(memory *mem, char *tasm_name);
+void shift(int_t *ternary_number, int_t by, bool left, bool int12);
 
 #endif
