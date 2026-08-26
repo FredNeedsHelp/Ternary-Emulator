@@ -30,8 +30,8 @@ ISA to write your own TASM (Ternary Assembly) code:
 | `shr` | 7 | Shift trit to the right | implemented |
 | `shl` | 8 | Shift trit to the left | implemented |
 | `cmp` | 9 | Compare between 2 regs| implemented |
-| `max` | 10 | Find maximum between 2 regs| NOT IMPLEMENTED YET, USE CMP |
-| `min` | 11 | Find minimum between 2 regs| NOT IMPLEMENTED YET, USE CMP |
+| `max` | 10 | Find maximum between 2 regs| implemented |
+| `min` | 11 | Find minimum between 2 regs| implemented |
 | `flp` | 12 | Negative op, named flip to change number "polarity" | implemented |
 | `set` | 13 | Set a number to a register | implemented |
 | `mlp` | 14 | Multiply between 2 regs | NOT IMPLEMENTED YET |
@@ -44,3 +44,5 @@ Any Negative is value is controlled by the system! if any negative op codes appe
 Use ; to comment in your code, anything and everything after the semicolon will not be interpreted by the assembler/parser/Program Loader
 
 Control flow is fully working! Check the test.TASM file to see how it works. should be quite straightforward.
+
+TASM code now requires an exit code when using quit ISA instruction, use 0 for success and anything else for an error. Result Enum for reference

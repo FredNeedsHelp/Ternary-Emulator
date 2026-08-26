@@ -4,6 +4,7 @@
 //prototype funcs
 results CPU_reset(CPU_t *cpu, memory *mem);
 results CPU_execute(CPU_t *cpu, memory *mem, int_t clock_cycle);
+results TERN_QUIT(CPU_t *cpu, memory *mem, results EXIT_CODE);
 
 void TernFetch(CPU_t *cpu, memory mem, int_t *clock_cycle, char_t *data);
 results mem_read(memory *mem, int_t address, char_t *data);
@@ -33,7 +34,7 @@ int main(void)
         if(CPU_reset(&cpu, &mem) != success) {Throw("CPU failed to iniatlise");}
         ProgramLoader(&mem, TASM);
         results rs = CPU_execute(&cpu, &mem, D2T_conversion(CPUcycle, false));
-        if(rs != success) {Throw("CPU failed to execute");}
+        if(rs != success) {printf("CPU has occured a error code: %d\n", rs);}
         CPU_status_end(cpu, rs);
         DUMP(cpu, mem);
 
@@ -72,16 +73,16 @@ void CPU_status_end(CPU_t cpu, results rs)
                 switch (rs)
                 {
                         case success:
-                                printf("CPU stopped\n");
+                                printf("CPU stopped succesfully\n");
                                 break;
                         case unknown_error:
-                                Throw("CPU was halted\n");
+                                Throw("CPU was halted with an unknown error; 1\n");
                                 break;
                         case invalid_memory:
-                                Throw("Invalid Memory Error; CPU has Halted\n");
+                                Throw("Invalid Memory Error; CPU has Halted; 2\n");
                                 break;
                         default:
-                                Throw("CPU has stopped without a exit code\n");
+                                Throw("CPU has stopped without a exit code: %d\n", rs);
                                 break;
                 }
                 return;
@@ -204,8 +205,8 @@ results CPU_execute(CPU_t *cpu, memory *mem, int_t clock_cycle) //clock cycle ac
 
                         case quit:
                                 cpu->halt = true;
-                                //Add here quit function to zero out everything and quit "Peacefully"
-                                return success;
+                                TernFetch(cpu, *mem, &clock_cycle, &address);                       
+                                return TERN_QUIT(cpu, mem, 0);
                                 break;
 
                         case halt:
@@ -216,7 +217,7 @@ results CPU_execute(CPU_t *cpu, memory *mem, int_t clock_cycle) //clock cycle ac
                                 Throw("No Instruction was set %c", inst2bin);
                                 break;
                 }
-        }      
+        }             
 }
 
 
@@ -346,6 +347,20 @@ void GetReg(CPU_t *cpu, memory *mem, int_t *clock_cycle, int_t *reg_dst, int_t *
         if(reg_dst != NULL) *reg_dst = reg_decoder(temp_cell, true); else Throw("Register is NULL");
         if(reg_src != NULL) *reg_src = reg_decoder(temp_cell, false);   
         return;
+}
+
+results TERN_QUIT(CPU_t *cpu, memory *mem, results EXIT_CODE)
+{
+        switch (EXIT_CODE)
+        {
+                case success:
+                        //if(CPU_reset(cpu, mem) != success) {Throw("CPU failed to safely exit");}
+                        return success;   
+                default:
+                        return EXIT_CODE;
+        }
+
+        //I made a switch statement so for future exit code implentation will be easier.
 }
 
 void Throw(const char * __restrict__ LogMSG,...) //Throws an error

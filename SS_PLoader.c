@@ -222,6 +222,7 @@ void ProgramLoader(memory *mem, char *tasm_name)
                                 case quit:
                                         C2T_conversion(quit, code);
                                         WriteMemTASM(mem, &address, &code);
+                                        Number2Mem(mem, numb, &address);
                                         break;                   
                                 default:
                                         Throw("Error Program Loader, unable to store instruction into memory\n");
