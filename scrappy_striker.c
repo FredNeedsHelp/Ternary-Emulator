@@ -8,7 +8,8 @@ results CPU_execute(CPU_t *cpu, memory *mem, int_t clock_cycle);
 void TernFetch(CPU_t *cpu, memory mem, int_t *clock_cycle, char_t *data);
 results mem_read(memory *mem, int_t address, char_t *data);
 void GetReg(CPU_t *cpu, memory *mem, int_t *clock_cycle, int_t *reg_dst, int_t *reg_src);
-trit comp(CPU_t *cpu, int_t destination, int_t source1);
+trit comp(int_t destination, int_t source1);
+void comp_m(CPU_t *cpu, int_t dst, int_t src, bool max);
 results load_mem(CPU_t *cpu, int_t destination, memory *mem, int_t memoryAddress);
 results t_move(CPU_t *cpu, int_t destination, int_t source1);
 results store_mem(CPU_t *cpu, int_t destination, memory *mem, int_t memoryAddress);
@@ -172,7 +173,17 @@ results CPU_execute(CPU_t *cpu, memory *mem, int_t clock_cycle) //clock cycle ac
                                 GetReg(cpu, mem, &clock_cycle, &reg_dst, &reg_src);
                                 dst_index = T2D_converter(reg_dst, false), 
                                 src_index = T2D_converter(reg_src, false); 
-                                cpu->flag = comp(cpu, cpu->registers[dst_index], cpu->registers[src_index]);  
+                                cpu->flag = comp(cpu->registers[dst_index], cpu->registers[src_index]);  
+                                break;
+
+                        case max:
+                                GetReg(cpu, mem, &clock_cycle, &reg_dst, &reg_src);
+                                comp_m(cpu, reg_dst, reg_src, true);
+                                break;
+
+                        case min:
+                                GetReg(cpu, mem, &clock_cycle, &reg_dst, &reg_src);
+                                comp_m(cpu, reg_dst, reg_src, false);                    
                                 break;
 
                         case shl:
@@ -269,7 +280,7 @@ results load_mem(CPU_t *cpu, int_t destination, memory *mem, int_t memoryAddress
         return success;
 }
 
-trit comp(CPU_t *cpu, int_t destination, int_t source1) //compare 2 register values
+trit comp(int_t destination, int_t source1) //compare 2 register values
 {
         int reg1 = T2D_converter(destination, false);
         int reg2 = T2D_converter(source1, false);
@@ -277,6 +288,25 @@ trit comp(CPU_t *cpu, int_t destination, int_t source1) //compare 2 register val
         if(reg1 > reg2) return pos;
         else if(reg1 < reg2) return neg;
         else return net;
+}
+
+void comp_m(CPU_t *cpu, int_t dst, int_t src, bool max) //compare min|max, the m stands for both.
+{
+        int dst_index = T2D_converter(dst, false);
+        int src_index = T2D_converter(src, false);
+
+        if(max)
+        {
+                if(comp(cpu->registers[dst_index], cpu->registers[src_index]) == neg) 
+                memcpy(&cpu->registers[dst_index], &cpu->registers[src_index], sizeof(int_t));
+        }
+        else if(!max)
+        {
+                if(comp(cpu->registers[dst_index], cpu->registers[src_index]) == pos) 
+                memcpy(&cpu->registers[dst_index], &cpu->registers[src_index], sizeof(int_t));     
+        }
+
+        return;
 }
 
 //use these later for the safety checks.

@@ -8,10 +8,12 @@
 #include <ctype.h>
 #include <stdarg.h>
 
+//Settings!
 #define register_count 3
-#define MEMORY_SIZE 27 //celss of data, at moment 3^3=27. 27 * char_t = 135 trits of data.
-#define ArraySize(arr) (sizeof(arr) / sizeof(arr[0]))
+#define MEMORY_SIZE 27 //cells of data, at moment 3^3=27. 27 * char_t = 135 trits of data.
 #define CPU_CYCLE_Default 27
+
+#define ArraySize(arr) (sizeof(arr) / sizeof(arr[0]))
 
 extern int CPUcycle;
 
@@ -45,23 +47,23 @@ static const char surprise[] = "How in the flying f*ck did you get this error? t
 
 typedef enum 
 {
-        add = 1,  //(✓)
-        sub = 2,  //(✓)
+        add = 1,  
+        sub = 2,  
         jmp = 3,  //jump to a line of code
         load = 4, //load from memory
         store = 5, //store in memory
-        move = 6, //move between registeries (✓)
+        move = 6, //move between registeries
         shr = 7, //shift to the right
         shl = 8, //shift to the left
-        cmp = 9, //compare (✓)
-        max = 10, //min & max are functionally redundent, only usefull for convience.
+        cmp = 9, //compare
+        max = 10, 
         min = 11,
         flp = 12, //this is negative op, but due to naming conventions. it will be called flip to flip the numbers "polarity" (✓)
         set = 13,
         mlp = 14, //Not Added 
         dvd = 15, //Not Added
         quit = 0,
-        halt = MEMORY_SIZE - 1, //halt should be the max mem.(✓)
+        halt = MEMORY_SIZE - 1, //halt should be the max mem.
 
         cyc_def = MEMORY_SIZE - 3,
         skip = MEMORY_SIZE - 2,
@@ -85,7 +87,7 @@ typedef struct
 
 typedef struct
 {
-        int_t pointer, stack; //pointer means the program the counter btw
+        int_t pointer, stack; //pointer means the program counter btw
         int_t registers[register_count]; //int9       
         trit flag;
         bool halt;

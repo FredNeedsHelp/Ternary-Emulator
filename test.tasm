@@ -2,13 +2,13 @@
 
 CYC 50
 
-set R0 26
-set R1 4
-cmp R0 R1
-jump POS 14
-sub R0 R1
+set R0 2 ; Setting up Regs
+set R1 10
+
+cmp R0 R1 ; Compare between Regs
+jump NEG 14 ; Jump to ram address 14 if the Compare return Neg
+min R0 R1
 quit
 
-add R0 R1
-shr R0 2
-quit
+max R0 R1 ; Gets the max between the 2 regs (10 > 2, so R1 will be copied into R0) 
+quit 
