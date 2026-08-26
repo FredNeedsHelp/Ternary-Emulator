@@ -14,172 +14,184 @@ char T2C(char_t ternary_char)
         return result;
 }
 
-int T2D_converter(int_t TernNumber, bool int12) //Ternary to Decimal Converter
+int T2D_int12(int12 TernNumber) //Ternary to Decimal Converter
 {
         int result = 0;
         int pw = 1;
 
-        if(int12)
-        {
-                for(int i = 0; i < 12; i++)
+        for(int i = 0; i < 12; i++)
                 {
-                        result += TernNumber.int12[i] * pw;
+                        result += TernNumber[i] * pw;
                         pw *= 3;
                 }
-        }
-        else
-        {
-                for(int i = 0; i < 9; i++)
-                {
-                        result += TernNumber.int9[i] * pw;
-                        pw *= 3;
-                }
-        }
-        
-
         return result;
 }
 
-int_t TernaryAdd(int_t X, int_t Y, bool int12) //Both X and Y have to be the same int type
+int T2D_int9(int9 TernNumber) //Ternary to Decimal Converter
+{
+        int result = 0;
+        int pw = 1;
+
+        for(int i = 0; i < 9; i++)
+                {
+                        result += TernNumber[i] * pw;
+                        pw *= 3;
+                }
+        return result;
+}
+
+void TernaryAdd_int9(int9 X, int9 Y, int9 sum) //Both X and Y have to be the same int type
 {
         trit carry = {0};
-        int_t sum = {0};
 
-        if(int12)
-        for(int i = 0; i < 12; i++)
+        for(int i = 0; i < 9; i++)
         {        
-                int temp_sum = X.int12[i] + Y.int12[i] + carry;
+                int temp_sum = X[i] + Y[i] + carry;
                 
                 switch (temp_sum)
                 {
                         case -3:
-                                sum.int12[i] = 0;
+                                sum[i] = 0;
                                 carry = -1;
                                 break;
                         case -2:
-                                sum.int12[i] = 1;
+                                sum[i] = 1;
                                 carry = -1;
                                 break;
 
                         case -1:
-                                sum.int12[i] = -1;
+                                sum[i] = -1;
                                 carry = 0;
                                 break;
 
                         case 0:
-                                sum.int12[i] = 0;
+                                sum[i] = 0;
                                 carry = 0;
                                 break;
 
                         case 1:
-                                sum.int12[i] = 1;
+                                sum[i] = 1;
                                 carry = 0;
                                 break;
 
                         case 2:
-                                sum.int12[i] = -1;
+                                sum[i] = -1;
                                 carry = 1;
                                 break;
                         case 3:
-                                sum.int12[i] = 0;
+                                sum[i] = 0;
                                 carry = 1;
                                 break;
                 }
         
         }
-        else
-        for(int i = 0; i < 9; i++)
+        return;
+}
+
+void TernaryAdd_int12(int12 X, int12 Y, int12 sum) //Both X and Y have to be the same int type
+{
+        trit carry = {0};
+
+        for(int i = 0; i < 12; i++)
         {        
-                int temp_sum = X.int9[i] + Y.int9[i] + carry;
+                int temp_sum = X[i] + Y[i] + carry;
                 
                 switch (temp_sum)
                 {
                         case -3:
-                                sum.int9[i] = 0;
+                                sum[i] = 0;
                                 carry = -1;
                                 break;
-
                         case -2:
-                                sum.int9[i] = 1;
+                                sum[i] = 1;
                                 carry = -1;
                                 break;
 
                         case -1:
-                                sum.int9[i] = -1;
+                                sum[i] = -1;
                                 carry = 0;
                                 break;
 
                         case 0:
-                                sum.int9[i] = 0;
+                                sum[i] = 0;
                                 carry = 0;
                                 break;
 
                         case 1:
-                                sum.int9[i] = 1;
+                                sum[i] = 1;
                                 carry = 0;
                                 break;
 
                         case 2:
-                                sum.int9[i] = -1;
+                                sum[i] = -1;
                                 carry = 1;
                                 break;
                         case 3:
-                                sum.int9[i] = 0;
+                                sum[i] = 0;
                                 carry = 1;
                                 break;
                 }
         
         }
-        return sum;
+        return;
 }
 
-int_t TernarySub(int_t X, int_t Y, bool int12)  //Both X and Y have to be the same int type
+void TernarySub_int12(int12 X, int12 Y, int12 sum)  //Both X and Y have to be the same int type
 {
-        return TernaryAdd(X, flip(Y, int12), int12);
+        int12 Z = {0};
+        flip_int12(Y, Z);
+        TernaryAdd_int12(X, Z, sum);
 }
 
-int_t flip(int_t X, bool int12)
+void TernarySub_int9(int9 X, int9 Y, int9 sum)  //Both X and Y have to be the same int type
 {
-        int_t sum = {0};
+        int9 Z = {0};
+        flip_int9(Y, Z);
+        TernaryAdd_int9(X, Z, sum);
+}
 
-        if(int12)
-        for(int i = 0; i < 12; i++)
-        {
-                int temp = X.int12[i];
-
-                switch (temp)
-                {
-                        case -1:
-                                sum.int12[i] = 1;
-                                break;
-                        case 0:
-                                sum.int12[i] = 0;
-                                break;
-                        case 1:
-                                sum.int12[i] = -1;
-                                break;
-                }
-        }
-        else
+void flip_int9(int9 X, int9 sum)
+{
         for(int i = 0; i < 9; i++)
         {
-                int temp = X.int9[i];
+                int temp = X[i];
 
                 switch (temp)
                 {
                         case -1:
-                                sum.int9[i] = 1;
+                                sum[i] = 1;
                                 break;
                         case 0:
-                                sum.int9[i] = 0;
+                                sum[i] = 0;
                                 break;
                         case 1:
-                                sum.int9[i] = -1;
+                                sum[i] = -1;
                                 break;
                 }
         }
+        return;
+}
 
-        return sum;
+void flip_int12(int12 X, int12 sum)
+{
+        for(int i = 0; i < 12; i++)
+        {
+                int temp = X[i];
+
+                switch (temp)
+                {
+                        case -1:
+                                sum[i] = 1;
+                                break;
+                        case 0:
+                                sum[i] = 0;
+                                break;
+                        case 1:
+                                sum[i] = -1;
+                                break;
+                }
+        }
+        return;
 }
 
 void C2T_conversion(char number, char_t rs) //Char to ternary conversion
@@ -218,127 +230,141 @@ void C2T_conversion(char number, char_t rs) //Char to ternary conversion
         return;
 }
 
-int_t D2T_conversion(int8_t number, bool int12) //Decimal to ternary conversion
+void D2T_int9(int8_t number, int9 rs) //Decimal to ternary conversion
 {
-        int_t rs = {0};
+        memset(rs, 0, sizeof(int9));
         int i = 0;
 
         while(number != 0)
         {
-                if(int12) {if(i == 12) {break;} else if(i > 12) {Throw("Attempted to overflow; D2T");}}
-                else {if(i == 9) {break;} else if(i > 9) {Throw("Attempted to overflow; D2T");}}
+                if(i == 9) {break;} else if(i > 9) {Throw("Attempted to overflow; D2T");}
 
                 int8_t q = number / 3;
                 int8_t r = number % 3;
 
-                if(int12)
-                {
                         switch (r)
                         {
                                 case 0:
-                                        rs.int12[i] = 0;
+                                        rs[i] = 0;
                                         break;
                                 case 1: 
-                                        rs.int12[i] = 1;
+                                        rs[i] = 1;
                                         break;
                                 case 2:
-                                        rs.int12[i] = -1;
+                                        rs[i] = -1;
                                         q++;
                                         break;
                                 default:
                                         Throw("Error converting to Trits");
                                         break;
                         }
-                }
-                else
-                {
-                        switch (r)
-                        {
-                                case 0:
-                                        rs.int9[i] = 0;
-                                        break;
-                                case 1: 
-                                        rs.int9[i] = 1;
-                                        break;
-                                case 2:
-                                        rs.int9[i] = -1;
-                                        q++;
-                                        break;
-                                default:
-                                        Throw("Error converting to Trits");
-                                        break;
-                        }
-                }
+                
 
                 number = q;
                 i++;
         }
+        return;
+}
 
-        return rs;
+void D2T_int12(int8_t number, int12 rs) //Decimal to ternary conversion
+{
+        memset(rs, 0, sizeof(int12));
+        int i = 0;
+
+        while(number != 0)
+        {
+                if(i == 12) {break;} else if(i > 12) {Throw("Attempted to overflow; D2T");}
+
+                int8_t q = number / 3;
+                int8_t r = number % 3;
+
+                        switch (r)
+                        {
+                                case 0:
+                                        rs[i] = 0;
+                                        break;
+                                case 1: 
+                                        rs[i] = 1;
+                                        break;
+                                case 2:
+                                        rs[i] = -1;
+                                        q++;
+                                        break;
+                                default:
+                                        Throw("Error converting to Trits");
+                                        break;
+                        }
+                
+
+                number = q;
+                i++;
+        }
+        return;
 }
 
 
 //by par. is int9 and bool int12 only regards of ternary_number. 
 //left bool is just the direction of the shift
-void shift(int_t *ternary_number, int_t by, bool left, bool int12)
+void shift_int12(int12 *ternary_number, int12 by, bool left)
 {
-        int by_amount = T2D_converter(by, false);
+        int by_amount = T2D_int12(by);
 
         if(left)
         {
-                if(int12)
-                {
                         for(int i = 0; i < by_amount; i++)
                         {
                                 for(int x = 11; x > 0; x--)
                                 {
-                                   ternary_number->int12[x] = ternary_number->int12[x - 1];  
+                                   (*ternary_number)[x] = *ternary_number[x - 1];  
                                 }
 
-                                ternary_number->int12[i] = net;
+                                (*ternary_number)[i] = net;
                         }
-                }
-                else if(!int12)
-                {    
-                        for(int i = 0; i < by_amount; i++)
-                        {
-                                for(int x = 8; x > 0; x--)
-                                {
-                                   ternary_number->int9[x] = ternary_number->int9[x - 1];  
-                                }
-
-                                ternary_number->int9[i] = net;
-                        }
-                }
+                
         }
         else if(!left)
         {
-                if(int12)
-                {
                         for(int i = 0; i < by_amount; i++)
                         {
                                 for(int x = 0; x < 11; x++)
                                 {
-                                   ternary_number->int12[x] = ternary_number->int12[x + 1];  
+                                   (*ternary_number)[x] = *ternary_number[x + 1];  
                                 }
 
-                                ternary_number->int12[11 - i] = net;
+                                (*ternary_number)[11 - i] = net;
                         }
-                }
-                else if(!int12)
-                {    
+        }
+        return;
+}
+
+void shift_int9(int9 *ternary_number, int9 by, bool left)
+{
+        int by_amount = T2D_int9(by);
+
+        if(left)
+        {
+                        for(int i = 0; i < by_amount; i++)
+                        {
+                                for(int x = 8; x > 0; x--)
+                                {
+                                   (*ternary_number)[x] = *ternary_number[x - 1];  
+                                }
+
+                                *ternary_number[i] = net;
+                        }
+                
+        }
+        else if(!left)
+        {
                         for(int i = 0; i < by_amount; i++)
                         {
                                 for(int x = 0; x < 8; x++)
                                 {
-                                   ternary_number->int9[x] = ternary_number->int9[x + 1];  
+                                   (*ternary_number)[x] = *ternary_number[x + 1];  
                                 }
 
-                                ternary_number->int9[8 - i] = net;
+                                *ternary_number[8 - i] = net;
                         }
-                }
         }
-        
-        double x = T2D_converter(*ternary_number, int12);
-        if(x != (long)x) printf("YOUR SHIFT HAS RESULTED IN A FLOATING-POINT. NOT IMPLEMENTED YET!!");
+        return;
 }

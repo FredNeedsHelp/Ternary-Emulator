@@ -24,25 +24,14 @@ typedef enum
         neg = -1
 } trit;
 
-typedef struct
-{
-        trit int9[9]; //9-trit values
-        trit int12[12]; //12-trit values
-} int_t;
-
-typedef struct
-{
-        int_t dst;
-        int_t src;
-} encoder; //temporary, this will be refactored much later on.
-
 typedef trit char_t[5]; //a custom trit char
-
+typedef trit int9[9]; //9-trit values
+typedef trit int12[12]; //12-trit values
 
 static const char surprise[] = "How in the flying f*ck did you get this error? this is meant to be unreachable.\npersonally reach to me if you get this";
 
 #define tern_zero (trit)0
-#define tern_int_zero (int_t){0}
+#define tern_int_zero {0}
 #define tern_char_zero {0}
 
 typedef enum 
@@ -87,24 +76,37 @@ typedef struct
 
 typedef struct
 {
-        int_t pointer, stack; //pointer means the program counter btw
-        int_t registers[register_count]; //int9       
+        //pointer means the program counter btw
+        int12 registers[register_count], pointer, stack;      
         trit flag;
         bool halt;
 } CPU_t;
 
 void Throw(const char * __restrict__ LogMSG,...);
 
-results mem_write(memory *mem, int_t address, char_t *data);
+results mem_write(memory *mem, int12 address, char_t *data);
 
-int T2D_converter(int_t TernNumber, bool int12);
-int_t TernarySub(int_t X, int_t Y, bool int12);
-int_t TernaryAdd(int_t X, int_t Y, bool int12);
-int_t flip(int_t X, bool int12);
+
 char T2C(char_t ternary_char);
 void C2T_conversion(char number, char_t rs);
-int_t D2T_conversion(int8_t number, bool int12);
 void ProgramLoader(memory *mem, char *tasm_name);
-void shift(int_t *ternary_number, int_t by, bool left, bool int12);
+
+int T2D_int12(int12 TernNumber);
+int T2D_int9(int9 TernNumber);
+
+void TernaryAdd_int12(int12 X, int12 Y, int12 sum);
+void TernaryAdd_int9(int9 X, int9 Y, int9 sum);
+
+void TernarySub_int12(int12 X, int12 Y, int12 sum);
+void TernarySub_int9(int9 X, int9 Y, int9 sum);
+
+void flip_int12(int12 X, int12 sum);
+void flip_int9(int9 X, int9 sum);
+
+void D2T_int12(int8_t number, int12 rs);
+void D2T_int9(int8_t number, int9 rs);
+
+void shift_int12(int12 *ternary_number, int12 by, bool left);
+void shift_int9(int9 *ternary_number, int9 by, bool left);
 
 #endif

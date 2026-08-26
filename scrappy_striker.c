@@ -3,17 +3,17 @@
 
 //prototype funcs
 results CPU_reset(CPU_t *cpu, memory *mem);
-results CPU_execute(CPU_t *cpu, memory *mem, int_t clock_cycle);
+results CPU_execute(CPU_t *cpu, memory *mem, int9 clock_cycle);
 results TERN_QUIT(CPU_t *cpu, memory *mem, results EXIT_CODE);
 
-void TernFetch(CPU_t *cpu, memory mem, int_t *clock_cycle, char_t *data);
-results mem_read(memory *mem, int_t address, char_t *data);
-void GetReg(CPU_t *cpu, memory *mem, int_t *clock_cycle, int_t *reg_dst, int_t *reg_src);
-trit comp(int_t destination, int_t source1);
-void comp_m(CPU_t *cpu, int_t dst, int_t src, bool max);
-results load_mem(CPU_t *cpu, int_t destination, memory *mem, int_t memoryAddress);
-results t_move(CPU_t *cpu, int_t destination, int_t source1);
-results store_mem(CPU_t *cpu, int_t destination, memory *mem, int_t memoryAddress);
+void TernFetch(CPU_t *cpu, memory mem, int9 clock_cycle, char_t *data);
+results mem_read(memory *mem, int12 address, char_t *data);
+void GetReg(CPU_t *cpu, memory *mem, int9 clock_cycle, int12 *reg_dst, int12 *reg_src);
+trit comp(int12 destination, int12 source1);
+void comp_m(CPU_t *cpu, int12 dst, int12 src, bool max);
+results load_mem(CPU_t *cpu, int12 destination, memory *mem, int12 memoryAddress);
+results t_move(CPU_t *cpu, int12 destination, int12 source1);
+results store_mem(CPU_t *cpu, int12 destination, memory *mem, int12 memoryAddress);
 void CPU_status_end(CPU_t cpu, results rs);
 
 void DUMP(CPU_t cpu, memory mem);
@@ -33,7 +33,8 @@ int main(void)
         CPU_t cpu;
         if(CPU_reset(&cpu, &mem) != success) {Throw("CPU failed to iniatlise");}
         ProgramLoader(&mem, TASM);
-        results rs = CPU_execute(&cpu, &mem, D2T_conversion(CPUcycle, false));
+        int9 temp = {0}; D2T_int9(CPUcycle, temp);
+        results rs = CPU_execute(&cpu, &mem, temp);
         if(rs != success) {printf("CPU has occured a error code: %d\n", rs);}
         CPU_status_end(cpu, rs);
         DUMP(cpu, mem);
@@ -52,18 +53,19 @@ void DUMP(CPU_t cpu, memory mem) //DUMPS ALL MEMORY AND CPU STATES
                 printf("%d\n", T2C(mem.Data[i]));
         }
 
-        printf("\nPointers: %d\nStack: %d\nFlag: %d", T2D_converter(cpu.pointer, true), T2D_converter(cpu.stack, true), cpu.flag);
+        printf("\nPointers: %d\nStack: %d\nFlag: %d", T2D_int12(cpu.pointer), T2D_int12(cpu.stack), cpu.flag);
 
         for(int i = 0; i < register_count; i++)
         {
                 printf("\nRegister %d: ", i);
-                printf("%d", T2D_converter(cpu.registers[i], false));
+                printf("%d", T2D_int12(cpu.registers[i]));
         }
 
         QueryPerformanceCounter(&end);
 
         double time_taken = (double)(end.QuadPart - start.QuadPart) * 1000 / (double)freq.QuadPart;
         printf("\nCPU Execution Time: %.4f ms\n", time_taken);
+        printf("\n\n- - - - - - - By FreddyAdam - - - - - - -\n\n");
 }
 
 void CPU_status_end(CPU_t cpu, results rs)
@@ -89,18 +91,18 @@ void CPU_status_end(CPU_t cpu, results rs)
         }
 }
 
-results CPU_execute(CPU_t *cpu, memory *mem, int_t clock_cycle) //clock cycle accepts only a int9
+results CPU_execute(CPU_t *cpu, memory *mem, int9 clock_cycle) //clock cycle accepts only a int9
 {     
-        printf("Clock Cycle(s) : %d\n", T2D_converter(clock_cycle, false));
+        printf("Clock Cycle(s) : %d\n", T2D_int9(clock_cycle));
 
-        while (T2D_converter(clock_cycle, false) > 0)
+        while (T2D_int9(clock_cycle) > 0)
         {
                 char_t instruction;
-                TernFetch(cpu, *mem, &clock_cycle, &instruction);
-                printf("%d\n", T2D_converter(clock_cycle, false));
+                TernFetch(cpu, *mem, clock_cycle, &instruction);
+                printf("%d\n", T2D_int9(clock_cycle));
 
                 unsigned char inst2bin = T2C(instruction);
-                int_t reg_dst = tern_int_zero, reg_src = tern_int_zero, memoryAddress = tern_int_zero, set_number = tern_int_zero;
+                int12 reg_dst = tern_int_zero, reg_src = tern_int_zero, memoryAddress = tern_int_zero, set_number = tern_int_zero;
                 char_t address = tern_char_zero, flg = tern_char_zero;
                 int dst_index = 0, src_index = 0; 
 
@@ -115,98 +117,100 @@ results CPU_execute(CPU_t *cpu, memory *mem, int_t clock_cycle) //clock cycle ac
                                 break;
 
                         case set:
-                                GetReg(cpu, mem, &clock_cycle, &reg_dst, &reg_src);  
-                                dst_index = T2D_converter(reg_dst, false);
-                                TernFetch(cpu, *mem, &clock_cycle, &address);
-                                memcpy(set_number.int9, address, sizeof(char_t));
-                                cpu->registers[dst_index] = set_number;
+                                GetReg(cpu, mem, clock_cycle, &reg_dst, &reg_src);  
+                                dst_index = T2D_int12(reg_dst);
+                                TernFetch(cpu, *mem, clock_cycle, &address);
+                                memcpy(set_number, address, sizeof(char_t));
+                                memcpy(cpu->registers[dst_index], set_number, sizeof(int12));
                                 break;
 
                         case add:  
-                                GetReg(cpu, mem, &clock_cycle, &reg_dst, &reg_src);  
-                                dst_index = T2D_converter(reg_dst, false), 
-                                src_index = T2D_converter(reg_src, false); 
-                                cpu->registers[dst_index] = TernaryAdd(cpu->registers[dst_index], cpu->registers[src_index], false);
+                                GetReg(cpu, mem, clock_cycle, &reg_dst, &reg_src);  
+                                dst_index = T2D_int12(reg_dst), 
+                                src_index = T2D_int12(reg_src);          
+                                TernaryAdd_int12(cpu->registers[dst_index], cpu->registers[src_index], cpu->registers[dst_index]);
                                 break; 
                         case sub:
-                                GetReg(cpu, mem, &clock_cycle, &reg_dst, &reg_src); 
-                                dst_index = T2D_converter(reg_dst, false), 
-                                src_index = T2D_converter(reg_src, false);   
-                                cpu->registers[dst_index] = TernarySub(cpu->registers[dst_index], cpu->registers[src_index], false);
+                                GetReg(cpu, mem, clock_cycle, &reg_dst, &reg_src); 
+                                dst_index = T2D_int12(reg_dst), 
+                                src_index = T2D_int12(reg_src);          
+                                TernarySub_int12(cpu->registers[dst_index], cpu->registers[src_index], cpu->registers[dst_index]);
                                 break;
                         
                         case jmp:
-                                TernFetch(cpu, *mem, &clock_cycle, &flg);
+                                TernFetch(cpu, *mem, clock_cycle, &flg);
                                 if(cpu->flag != flg[0]) break;
-                                TernFetch(cpu, *mem, &clock_cycle, &address);
-                                memcpy(memoryAddress.int12, address, sizeof(char_t));
-                                memcpy(cpu->pointer.int12, memoryAddress.int12, sizeof(trit) * 12);
+                                TernFetch(cpu, *mem, clock_cycle, &address);
+                                memcpy(memoryAddress, address, sizeof(char_t));
+                                memcpy(cpu->pointer, memoryAddress, sizeof(int12));
                                 break;
         
                         case move:                               
-                                GetReg(cpu, mem, &clock_cycle, &reg_dst, &reg_src);  
+                                GetReg(cpu, mem, clock_cycle, &reg_dst, &reg_src);  
                                 t_move(cpu, reg_dst, reg_src);
                                 break;
 
                         case flp:
-                                GetReg(cpu, mem, &clock_cycle, &reg_dst, NULL);  
-                                dst_index = T2D_converter(reg_dst, false);
-                                cpu->registers[dst_index] = flip(cpu->registers[dst_index], false);
+                                GetReg(cpu, mem, clock_cycle, &reg_dst, NULL);  
+                                dst_index = T2D_int12(reg_dst);
+                                flip_int12(cpu->registers[dst_index], cpu->registers[dst_index]);
                                 break;
 
                         case load:
-                                GetReg(cpu, mem, &clock_cycle, &reg_dst, NULL);  
+                                GetReg(cpu, mem, clock_cycle, &reg_dst, NULL);  
                                 //dst_index = T2D_converter(reg_dst, false);
-                                TernFetch(cpu, *mem, &clock_cycle, &address);
-                                memcpy(memoryAddress.int12, address, sizeof(char_t));
+                                TernFetch(cpu, *mem, clock_cycle, &address);
+                                memcpy(memoryAddress, address, sizeof(char_t));
                                 load_mem(cpu, reg_dst, mem, memoryAddress); //load specfic mem address, incomplete!!!
                                 break;
 
                         case store:
-                                GetReg(cpu, mem, &clock_cycle, &reg_dst, NULL);  
+                                GetReg(cpu, mem, clock_cycle, &reg_dst, NULL);  
                                 //dst_index = T2D_converter(reg_dst, false);
-                                TernFetch(cpu, *mem, &clock_cycle, &address);
-                                memcpy(memoryAddress.int12, address, sizeof(char_t));
+                                TernFetch(cpu, *mem, clock_cycle, &address);
+                                memcpy(memoryAddress, address, sizeof(char_t));
                                 store_mem(cpu, reg_dst, mem, memoryAddress);
                                 break;
 
                         case cmp:
-                                GetReg(cpu, mem, &clock_cycle, &reg_dst, &reg_src);
-                                dst_index = T2D_converter(reg_dst, false), 
-                                src_index = T2D_converter(reg_src, false); 
+                                GetReg(cpu, mem, clock_cycle, &reg_dst, &reg_src);
+                                dst_index = T2D_int12(reg_dst), 
+                                src_index = T2D_int12(reg_src); 
                                 cpu->flag = comp(cpu->registers[dst_index], cpu->registers[src_index]);  
                                 break;
 
                         case max:
-                                GetReg(cpu, mem, &clock_cycle, &reg_dst, &reg_src);
+                                GetReg(cpu, mem, clock_cycle, &reg_dst, &reg_src);
                                 comp_m(cpu, reg_dst, reg_src, true);
                                 break;
 
                         case min:
-                                GetReg(cpu, mem, &clock_cycle, &reg_dst, &reg_src);
+                                GetReg(cpu, mem, clock_cycle, &reg_dst, &reg_src);
                                 comp_m(cpu, reg_dst, reg_src, false);                    
                                 break;
 
                         case shl:
-                                GetReg(cpu, mem, &clock_cycle, &reg_dst, NULL);
-                                dst_index = T2D_converter(reg_dst, false);
-                                TernFetch(cpu, *mem, &clock_cycle, &address);
-                                memcpy(set_number.int9, address, sizeof(char_t));
-                                shift(&cpu->registers[dst_index], set_number, true, false);
+                                GetReg(cpu, mem, clock_cycle, &reg_dst, NULL);
+                                dst_index = T2D_int12(reg_dst);
+                                TernFetch(cpu, *mem, clock_cycle, &address);
+                                memcpy(set_number, address, sizeof(char_t));
+                                //shift(&cpu->registers[dst_index], set_number, true, false);
+                                shift_int12(&cpu->registers[dst_index], set_number, true);
                                 break;
 
                         case shr:
-                                GetReg(cpu, mem, &clock_cycle, &reg_dst, NULL);
-                                dst_index = T2D_converter(reg_dst, false);
-                                TernFetch(cpu, *mem, &clock_cycle, &address);
-                                memcpy(set_number.int9, address, sizeof(char_t));
-                                shift(&cpu->registers[dst_index], set_number, false, false);
+                                GetReg(cpu, mem, clock_cycle, &reg_dst, NULL);
+                                dst_index = T2D_int12(reg_dst);
+                                TernFetch(cpu, *mem, clock_cycle, &address);
+                                memcpy(set_number, address, sizeof(char_t));
+                                //shift(&cpu->registers[dst_index], set_number, false, false);
+                                shift_int12(&cpu->registers[dst_index], set_number, false);
                                 break;
 
                         case quit:
                                 cpu->halt = true;
-                                TernFetch(cpu, *mem, &clock_cycle, &address);                       
-                                return TERN_QUIT(cpu, mem, 0);
+                                TernFetch(cpu, *mem, clock_cycle, &address);                       
+                                return TERN_QUIT(cpu, mem, T2C(address));
                                 break;
 
                         case halt:
@@ -220,100 +224,93 @@ results CPU_execute(CPU_t *cpu, memory *mem, int_t clock_cycle) //clock cycle ac
         }             
 }
 
-
-
-void TernFetch(CPU_t *cpu, memory mem, int_t *clock_cycle, char_t *data)
+void TernFetch(CPU_t *cpu, memory mem, int9 clock_cycle, char_t *data)
 {
         //char_t tmp_data; //= mem.Data[T2D_converter(cpu.pointer, true)];
         if(mem_read(&mem, cpu->pointer, data) != success) {Throw("failed to read memory");}
-        cpu->pointer = TernaryAdd(cpu->pointer, D2T_conversion(1, true), true);
-        *clock_cycle = TernarySub(*clock_cycle, D2T_conversion(1, false), false);
+        //cpu->pointer = TernaryAdd(cpu->pointer, D2T_conversion(1, true), true);
+        int12 rs = {0};
+        D2T_int12(1, rs);
+        TernaryAdd_int12(cpu->pointer, rs, cpu->pointer);
+        //*clock_cycle = TernarySub(*clock_cycle, D2T_conversion(1, false), false);
+        int9 temp = {0};
+        D2T_int9(1, temp);
+        TernarySub_int9(clock_cycle, temp, clock_cycle);
         return;      
-} //No need to refrence the mem or cpu, we are not modifying it. simply just reading.
+}
 
 results CPU_reset(CPU_t *cpu, memory *mem)
 {
         memset(mem, 0, sizeof(memory)); //iniatlise RAM aka ZERO out
         memset(cpu, 0, sizeof(CPU_t));
-
-        //just in case, btw.
-        cpu->halt = false;
-
-        cpu->pointer = tern_int_zero; 
-        cpu->stack = tern_int_zero;
-        
-        for(uint32_t i = 0; i < register_count; i++)
-        {
-                cpu->registers[i] = tern_int_zero;
-        }
         return success;
 }
 
-results t_move(CPU_t *cpu, int_t destination, int_t source1) //move function to move between register(s)
+results t_move(CPU_t *cpu, int12 destination, int12 source1) //move function to move between register(s)
 {
-        int rg_count = T2D_converter(destination, false);
-        int rg_count1 = T2D_converter(source1, false);
+        int rg_count = T2D_int12(destination);
+        int rg_count1 = T2D_int12(source1);
         if(rg_count < 0 || rg_count >= register_count || rg_count1 < 0 || rg_count1 >= register_count) {Throw("Invalid Register Number");}
 
-        cpu->registers[rg_count] = cpu->registers[rg_count1];
+        memcpy(cpu->registers[rg_count], cpu->registers[rg_count1], sizeof(int12));
         return success;
 }
 
-results store_mem(CPU_t *cpu, int_t destination, memory *mem, int_t memoryAddress)
+results store_mem(CPU_t *cpu, int12 destination, memory *mem, int12 memoryAddress)
 {
-        int add_temp = T2D_converter(memoryAddress, true);
+        int add_temp = T2D_int12(memoryAddress);
         if(add_temp < 0 || add_temp >= MEMORY_SIZE) {return invalid_memory;}
 
-        int rg_count = T2D_converter(destination, false);
-        memcpy(mem->Data[T2D_converter(memoryAddress, true)], cpu->registers[rg_count].int9, sizeof(char_t));
+        int rg_count = T2D_int12(destination);
+        memcpy(mem->Data[add_temp], cpu->registers[rg_count], sizeof(char_t));
         //*mem->Data[T2D_converter(memoryAddress, false)] = cpu->registers[rg_count].int9;
         return success;
 }
 
-results load_mem(CPU_t *cpu, int_t destination, memory *mem, int_t memoryAddress)
+results load_mem(CPU_t *cpu, int12 destination, memory *mem, int12 memoryAddress)
 {
-        int add_temp = T2D_converter(memoryAddress, true);
+        int add_temp = T2D_int12(memoryAddress);
         if(add_temp < 0 || add_temp >= MEMORY_SIZE) {return invalid_memory;}
 
-        int rg_count = T2D_converter(destination, false);
+        int rg_count = T2D_int12(destination);
         //*cpu->registers[rg_count].int9 = *mem->Data[T2D_converter(memoryAddress, false)];
-        memcpy(cpu->registers[rg_count].int9, mem->Data[T2D_converter(memoryAddress, true)], sizeof(char_t));
+        memcpy(cpu->registers[rg_count], mem->Data[add_temp], sizeof(char_t));
         return success;
 }
 
-trit comp(int_t destination, int_t source1) //compare 2 register values
+trit comp(int12 destination, int12 source1) //compare 2 register values
 {
-        int reg1 = T2D_converter(destination, false);
-        int reg2 = T2D_converter(source1, false);
+        int reg1 = T2D_int12(destination);
+        int reg2 = T2D_int12(source1);
 
         if(reg1 > reg2) return pos;
         else if(reg1 < reg2) return neg;
         else return net;
 }
 
-void comp_m(CPU_t *cpu, int_t dst, int_t src, bool max) //compare min|max, the m stands for both.
+void comp_m(CPU_t *cpu, int12 dst, int12 src, bool max) //compare min|max, the m stands for both.
 {
-        int dst_index = T2D_converter(dst, false);
-        int src_index = T2D_converter(src, false);
+        int dst_index = T2D_int12(dst);
+        int src_index = T2D_int12(src);
 
         if(max)
         {
                 if(comp(cpu->registers[dst_index], cpu->registers[src_index]) == neg) 
-                memcpy(&cpu->registers[dst_index], &cpu->registers[src_index], sizeof(int_t));
+                memcpy(&cpu->registers[dst_index], &cpu->registers[src_index], sizeof(int12));
         }
         else if(!max)
         {
                 if(comp(cpu->registers[dst_index], cpu->registers[src_index]) == pos) 
-                memcpy(&cpu->registers[dst_index], &cpu->registers[src_index], sizeof(int_t));     
+                memcpy(&cpu->registers[dst_index], &cpu->registers[src_index], sizeof(int12));     
         }
 
         return;
 }
 
 //use these later for the safety checks.
-results mem_read(memory *mem, int_t address, char_t *data) //reads memory with safe-checks
+results mem_read(memory *mem, int12 address, char_t *data) //reads memory with safe-checks
 {
-        int add_temp = T2D_converter(address, true);
+        int add_temp =  T2D_int12(address);
         if(add_temp < 0 || add_temp >= MEMORY_SIZE) {return invalid_memory;}
         else
         //data = mem->Data[add_temp];
@@ -321,9 +318,9 @@ results mem_read(memory *mem, int_t address, char_t *data) //reads memory with s
         return success;
 }
 
-results mem_write(memory *mem, int_t address, char_t *data)//writes memory with safe-checks
+results mem_write(memory *mem, int12 address, char_t *data)//writes memory with safe-checks
 {
-        int add_temp = T2D_converter(address, true);
+        int add_temp = T2D_int12(address);
         if(add_temp < 0 || add_temp >= MEMORY_SIZE) {return invalid_memory;}
         else
         //*mem->Data[add_temp] = *data;
@@ -331,21 +328,20 @@ results mem_write(memory *mem, int_t address, char_t *data)//writes memory with 
         return success;
 }
 
-int_t reg_decoder(char_t cell, bool dst) //returns an int9
+void reg_decoder(char_t cell, int12 dst, int12 src) //returns an int9
 {
         int packed = T2C(cell);   
-        if(dst) 
-        return D2T_conversion(packed % register_count, false); //destination
-        else
-        return D2T_conversion((packed / register_count) % register_count, false); //source1
+        D2T_int12(packed % register_count, dst); //destination
+        D2T_int12((packed / register_count) % register_count, src); //source1
+        return;
 }
 
-void GetReg(CPU_t *cpu, memory *mem, int_t *clock_cycle, int_t *reg_dst, int_t *reg_src)
+void GetReg(CPU_t *cpu, memory *mem, int9 clock_cycle, int12 *reg_dst, int12 *reg_src)
 {
         char_t temp_cell = {0};
         TernFetch(cpu, *mem, clock_cycle, &temp_cell);
-        if(reg_dst != NULL) *reg_dst = reg_decoder(temp_cell, true); else Throw("Register is NULL");
-        if(reg_src != NULL) *reg_src = reg_decoder(temp_cell, false);   
+        if(reg_dst == NULL) {Throw("GetReg Function has received a NULL for reg_dst");}
+        reg_decoder(temp_cell, *reg_dst, *reg_src);
         return;
 }
 

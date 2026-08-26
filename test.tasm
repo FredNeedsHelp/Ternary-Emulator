@@ -6,7 +6,7 @@ set R0 5 ; Setting up Regs
 set R1 10
 
 cmp R0 R1 ; Compare between Regs
-jump NEG 14 ; Jump to ram address 14 if the Compare return Neg
+jump NEG 15 ; Jump to ram address 14 if the Compare return Neg
 min R0 R1
 quit 0
 

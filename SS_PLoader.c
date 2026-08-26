@@ -43,21 +43,23 @@ int Parse4Reg(char *buffer)//hard coded for 3 registers, will change later to be
 
                         if(!isalpha(buffer[i])) 
                         {
-                                if(numb > register_count) return -1;
+                                if(numb >= register_count) return -1;
                                 else return numb;
                         } 
                 }
         } else return -1;
 }
 
-void WriteMemTASM(memory *mem, int_t *address, char_t *data)
+void WriteMemTASM(memory *mem, int12 *address, char_t *data)
 {
         mem_write(mem, *address, data);
-        *address = TernaryAdd(*address, D2T_conversion(1, true), true);
+        int12 rs = {0};
+        D2T_int12(1, rs);
+        TernaryAdd_int12(*address, rs, *address);
 }
 
 
-void RegEncoder(memory *mem, char *dst, char *src, int_t *address) //Parses for Register and then encodes it into memory
+void RegEncoder(memory *mem, char *dst, char *src, int12 *address) //Parses for Register and then encodes it into memory
 {
         int reg_Dst = 0, reg_Src = 0;
         reg_Dst = Parse4Reg(dst);
@@ -91,7 +93,7 @@ int Parse4Number(char *buffer)
 
 //Takes any number that is present after the register/op, 
 //used for jmp to get the address and set to get the value.
-void Number2Mem(memory *mem, char *buffer, int_t *address) 
+void Number2Mem(memory *mem, char *buffer, int12 *address) 
 {
         int number = Parse4Number(buffer);
         char_t temp = tern_char_zero;
@@ -113,7 +115,7 @@ void ProgramLoader(memory *mem, char *tasm_name)
         if(!(tasm_file = fopen(tasm_name, "r"))) {Throw("No Input File detected");} //add input for the file!
           
         char buffer[243]; //line size limit, 3^5 = 243
-        int_t address = tern_int_zero;
+        int12 address = tern_int_zero;
 
         //int z = 0;
 
