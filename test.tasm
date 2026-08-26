@@ -2,7 +2,7 @@
 
 CYC 50
 
-set R0 2 ; Setting up Regs
+set R0 5 ; Setting up Regs
 set R1 10
 
 cmp R0 R1 ; Compare between Regs

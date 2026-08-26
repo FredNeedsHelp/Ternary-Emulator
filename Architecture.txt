@@ -1,0 +1,74 @@
+This is text document documenting the architecture of the ternary emulator that could be found in this 
+GitHub repo: https://github.com/FredNeedsHelp/Ternary-Emulator
+
+Representation of ternary values and integers:
+
+A base enum called 'trit' could be found in the header file, which assigns pos to 1, net to 0, and neg to -1.
+Making an array out of the enum trit allows for ternary representation of integers, which allows for trit-wise operations.
+3 custom data types exist currently: Int9, Int12, and Char_t.
+
+The number tacked on the end of the int represents the int's width, char_t is 5 trits long.
+
+For as 2026/08/26, a struct called int_t which holds the int9 and int12 arrays, which is going to be refactored in the near-future.
+I will not elaborate as the refactoring is in the works, and explaining such a matter will be a waste of time for the both of us.
+
+By default, the emulator has 3 registers and 27 cells of ram (135 trits of ram).
+Another thing to know is the custom ISA which will be called TISA (Ternary Instruction Set Architecture) from now on,
+TISA is quite small and primitive, only having ~20 instructions, 15 exposed to the programmer writing tasm code and 5 for the system.
+
+typedef enum 
+{
+        add = 1,  
+        sub = 2,  
+        jmp = 3,  
+        load = 4, 
+        store = 5,
+        move = 6,
+        shr = 7, 
+        shl = 8,
+        cmp = 9, 
+        max = 10, 
+        min = 11,
+        flp = 12, 
+        set = 13,
+        mlp = 14,
+        dvd = 15,
+        quit = 0,
+        halt = MEMORY_SIZE - 1, 
+
+        cyc_def = MEMORY_SIZE - 3,
+        skip = MEMORY_SIZE - 2,
+        Unknown_Halt = -1 
+} op_codes;  
+
+The table will look like in the header, 
+Im going to start explaining on how each instruction works.
+
+Add: Adds between 2 registers. ex: add R0 R1
+Sub: Subtracts between 2 registers. ex: sub R0 R1
+jmp: Jumps to a line of code using an RAM address, can accept a trit value. ex: jump NEG 14
+load: loads data from memory into register using a memory address. ex: load R1 14
+store: store data from register into memory using a memory address. ex: store R1 14
+shr: shifts trits to the right, the number after the register is how many. ex: shr R0 5 
+shr: shifts trits to the left, the number after the register is how many. ex: shl R0 5
+cmp: compares between 2 registers and updates a trit flag which is used the jmp. ex: cmp R0 R1
+max: compares between 2 registers and gets the largest value between them and puts them into dst register. ex: max R0 R1
+min: compares between 2 registers and gets the smallest value between them and puts them into dst register. ex: min R0 R1
+flp: flips the polarity of the register. ex: flip R0
+set: equivalent to an immediate, sets a register to a value. ex: set R0 10
+quit: resets RAM and CPU before halting CPU, and has an exit code. ex: quit 0
+halt: stops the CPU and dumps RAM and CPU.
+cyc_def: how many cycles the CPU is allowed to run for. ex: CYC 50
+
+Of course at this moment, mlp and dvd doesn't exist yet, but they will bear the same structure as of Add/Sub.
+
+This text document isn't going to explain every minuet detail to the last hair. figure it out, my code is quite easy to read and isn't very big. I simply explained on how to write TASM code and the basic structure of the emulator. 
+
+All functions and variable names follow a standard naming convention, if its converting x to y. then take the first letter of the data type of x and then take the first letter of the data type of y and add a 2 between them. ex: T2D (Ternary 2 Decimal), T2C (Ternary 2 Char), D2T (Decimal 2 Ternary), etc.
+
+I also would like to note that the assembler is VERY primitive, anything I didn't take account for will probably not be dealt with correctly and throw an error or a "Surprise" if your stupid enough. Same goes for the CPU, TISA, and everything else.
+I built this emulator including the assembler in under 5 days with no experience with CPU architecture, emulation, nor ternary.	
+
+The assembler will and wont check if your code is valid, anything you write is going straight into the CPU (if it is present in the look up table of course).
+
+This emulator is for a school proposal, so I did not use AI or any LMMs to write ANY CODE. I absolutely despise AI and AI CODE/WORK, its absolute SHIT and will never solve any real problems. The furthest usage of AI ill allow ever in my personal life is using it as a glorified debugger and not a nanometer over that line.
