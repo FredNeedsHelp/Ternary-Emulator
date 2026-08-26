@@ -2,11 +2,11 @@
 This is the basic core code for a ternary emulator made in C. Nicknamed Scrappy Striker, because im going to try build a ternary 
 computer with scraps and it will strike the world with its awesomeness. 
 - - -
-I would like to note that I have imposed a few limitations on the emulator, such as the ram being 27 trits long even if the memory address can support much more. same also applies to the registries.
+I would like to note that I have imposed a few limitations on the emulator, such as the ram being 27 trits long (3^3 = 27, 27 * char_t(5) = 135 trits) even if the memory address can support much more. same also applies to the registries.
 
 if you would like to change them, you can find the definitions in the scrappy_striker header (scrappy_striker.h).
 
-This is an early prototype, many bugs will be present and I have only tested the ALU because that's what I need.
+This is an early prototype, many bugs will be present and I have only tested a small part of the emulator.
 
 **Notes, Directions, and Extra**:
 
@@ -15,7 +15,7 @@ to make your own program.
 
 To load the program into the emulator make sure to provide a directory or place the file next to the exe.
 
-to build the program use gcc: gcc scrappy_striker.c SS_PLoader.c -o scrappy_striker
+to build the program use gcc: gcc scrappy_striker.c SS_PLoader.c scrappy_striker_math.c -o scrappy_striker
 
 ISA to write your own TASM (Ternary Assembly) code:
 
@@ -39,7 +39,7 @@ ISA to write your own TASM (Ternary Assembly) code:
 | `quit` | 0 | Quits the program | Not recommended if using DUMP |
 | `halt` | 26 | Halt stops the CPU immediately | implemented |
 
-Any Negative is value is controlled by the system! if any negative op codes appear, your cooked lollll. (Check RAM DUMP to see op codes saved in MEM)
+Any Negative is value is controlled by the system! if any negative op codes appear, your cooked lollll. (Check RAM DUMP to see op codes, use the values from either the header or this table. dont forgot that data is also mixed in with the op codes; however, just follow your tasm file. its quite easy to translate from tasm to memory (machine code).
 
 Use ; to comment in your code, anything and everything after the semicolon will not be interpreted by the assembler/parser/Program Loader
 
