@@ -19,7 +19,7 @@ to make your own program.
 To load the program into the emulator make sure to provide a directory or place the file next to the exe.
 
 to build the program use gcc: gcc scrappy_striker.c SS_PLoader.c scrappy_striker_math.c -o scrappy_striker
-The main scrappy_striker.c does include a windows header for execution measurements, if your using linux/macos. simply edit the main function to include POSIX/UNIX 
+The main scrappy_striker.c does include a windows header for execution measurements, if your using linux/macos. simply edit the main function to replace windows with POSIX/UNIX func. 
 
 ISA to write your own TASM (Ternary Assembly) code:
 
