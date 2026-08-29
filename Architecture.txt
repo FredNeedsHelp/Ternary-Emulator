@@ -9,8 +9,10 @@ Making an array out of the enum trit allows for ternary representation of intege
 
 The number tacked on the end of the int represents the int's width, char_t is 5 trits long.
 
-For as 2026/08/26, a struct called int_t which holds the int9 and int12 arrays, which is going to be refactored in the near-future.
-I will not elaborate as the refactoring is in the works, and explaining such a matter will be a waste of time for the both of us.
+This is an updated version of the architecture, older legacy version had the 2 main data types defined in a struct called int_t which was a pain in the ass to work with. I have spent a few hours refactoring all my code
+to support a newer and more elegant architecture, aka separate data types not found in a singular struct.
+
+yes, im dead inside and i had to change every goddam function and how they return data. In C you return a whole fucking struct but not an array, classic.
 
 By default, the emulator has 3 registers and 27 cells of ram (135 trits of ram).
 Another thing to know is the custom ISA which will be called TISA (Ternary Instruction Set Architecture) from now on,
