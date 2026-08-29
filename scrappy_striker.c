@@ -113,7 +113,10 @@ results CPU_execute(CPU_t *cpu, memory *mem, int9 clock_cycle) //clock cycle acc
                                 break;
 
                         case mlp:
-                                //Add Code Later
+                                GetReg(cpu, mem, clock_cycle, &reg_dst, &reg_src);  
+                                dst_index = T2D_int12(reg_dst), 
+                                src_index = T2D_int12(reg_src);          
+                                mlp_int12(cpu->registers[dst_index], cpu->registers[src_index], &cpu->registers[dst_index]);
                                 break;
 
                         case set:

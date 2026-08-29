@@ -52,10 +52,10 @@ typedef enum
         mlp = 14, //Not Added 
         dvd = 15, //Not Added
         quit = 0,
-        halt = MEMORY_SIZE - 1, //halt should be the max mem.
+        halt = 26, //halt should be the max mem.
 
-        cyc_def = MEMORY_SIZE - 3,
-        skip = MEMORY_SIZE - 2,
+        cyc_def = 24,
+        skip = 25,
         Unknown_Halt = -1 
 } op_codes;
 
@@ -99,6 +99,8 @@ void TernaryAdd_int9(int9 X, int9 Y, int9 sum);
 
 void TernarySub_int12(int12 X, int12 Y, int12 sum);
 void TernarySub_int9(int9 X, int9 Y, int9 sum);
+
+void mlp_int12(int12 x, int12 y, int12 *product);
 
 void flip_int12(int12 X, int12 sum);
 void flip_int9(int9 X, int9 sum);

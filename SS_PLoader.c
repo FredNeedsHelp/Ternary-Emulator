@@ -6,7 +6,9 @@ FILE *tasm_file = NULL;
 op_codes LookUpTable(char *token)
 {
         if(strcmp(token, "add") == 0) return add;                
-        if(strcmp(token, "sub") == 0) return sub;                
+        if(strcmp(token, "sub") == 0) return sub;
+        if(strcmp(token, "mlp") == 0) return mlp;
+        if(strcmp(token, "dvd") == 0) return dvd;                
         if(strcmp(token, "jump") == 0) return jmp;                
         if(strcmp(token, "load") == 0) return load;                
         if(strcmp(token, "store") == 0) return store;                
@@ -23,6 +25,8 @@ op_codes LookUpTable(char *token)
         if(strcmp(token, "shr") == 0) return shr;  
         if(strcmp(token, "CYC") == 0) return cyc_def;
         return Unknown_Halt;
+
+        //Refactor to use a for-loop, so whenever a new op code is made, no update is needed.
 }
 
 int Parse4Reg(char *buffer)//hard coded for 3 registers, will change later to be dynamic with the register_count definition
@@ -74,8 +78,12 @@ int Parse4Number(char *buffer)
 {
         for(int i = 0; buffer[i] != '\0'; i++)
         {
-                if(!isdigit(buffer[i]) || ( i > 0 && isalpha(buffer[i - 1]))) {i++; continue;}
-                
+                trit sign = net;
+
+                if(!isdigit(buffer[i]) || ( i > 0 && isalpha(buffer[i - 1]))) {continue;}
+                if(ispunct(buffer[i - 1]) != 0) {sign = neg;}
+                else {sign = pos;}
+
                 int numb = 0;
 
                 while(isdigit(buffer[i]))
@@ -86,7 +94,9 @@ int Parse4Number(char *buffer)
 
                 if(!isalpha(buffer[i])) 
                 {
-                        return numb;
+                        if(sign == pos) return numb;
+                        else if(sign == neg) return -numb;
+                        else printf("An Error has Occured; Parse 4 Number returned no sign");                   
                 } 
         }
 }
@@ -160,6 +170,19 @@ void ProgramLoader(memory *mem, char *tasm_name)
                                         RegEncoder(mem, numb, NULL, &address);
                                         Number2Mem(mem, regs, &address);
                                         break;
+
+                                case mlp:
+                                        C2T_conversion(mlp, code);
+                                        WriteMemTASM(mem, &address, &code);
+                                        RegEncoder(mem, numb, regs, &address);
+                                        break;
+
+                                case dvd:
+                                        C2T_conversion(dvd, code);
+                                        WriteMemTASM(mem, &address, &code);
+                                        RegEncoder(mem, numb, regs, &address);
+                                        break;
+                                
                                 case add:
                                         C2T_conversion(add, code);
                                         WriteMemTASM(mem, &address, &code);

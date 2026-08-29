@@ -1,0 +1,7 @@
+CYC 9
+
+set R0 20
+set R1 5
+mlp R0 R1
+
+quit 0
