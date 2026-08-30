@@ -56,3 +56,11 @@ Control flow is fully working! Check the test.TASM file to see how it works. sho
 
 TASM code now requires an exit code when using quit ISA instruction, use 0 for success and anything else for an error. Result Enum for reference. 
 Leaving it empty will result in a error / undefined behavior.
+
+List of future additions:
+- [ ] Assembler accepts Negative Numbers
+- [ ] Dvd (division)
+- [ ] Labels for Jump (control flaw)
+- [ ] More Abstractions/TISA instructions.
+
+Ill probably have more stuff to add, but forgot to put it in the list. 
