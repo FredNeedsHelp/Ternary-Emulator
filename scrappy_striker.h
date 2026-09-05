@@ -38,23 +38,24 @@ typedef enum
 {
         add = 1,  
         sub = 2,  
-        jmp = 3,  //jump to a line of code
-        load = 4, //load from memory
-        store = 5, //store in memory
-        move = 6, //move between registeries
-        shr = 7, //shift to the right
-        shl = 8, //shift to the left
+        jmp = 3,  //jump to a line of code (memory address or label)
+        load = 4, //load from memory to regs
+        store = 5, //store in memory from reg
+        move = 6, //move between regs
+        shr = 7, //shift trits to the right by x amount
+        shl = 8, //shift trits to the left by x amount
         cmp = 9, //compare
         max = 10, 
         min = 11,
         flp = 12, //this is negative op, but due to naming conventions. it will be called flip to flip the numbers "polarity" (✓)
         set = 13,
-        mlp = 14, //Not Added 
-        dvd = 15, //Not Added
+        mlp = 14, 
+        dvd = 15, //Not Added(yet)
         quit = 0,
-        halt = 26, //halt should be the max mem.
+        halt = 26,
 
-        cyc_def = 24,
+        cyc_def = 23,
+        label = 24,
         skip = 25,
         Unknown_Halt = -1 
 } op_codes;
@@ -66,7 +67,8 @@ typedef enum
 {
         success = 0,
         unknown_error = 1,
-        invalid_memory = 2
+        invalid_memory = 2,
+        depleted_cycle = 3
 } results;
 
 typedef struct 
@@ -85,7 +87,8 @@ typedef struct
 void Throw(const char * __restrict__ LogMSG,...);
 
 results mem_write(memory *mem, int12 address, char_t *data);
-
+trit comp(int12 destination, int12 source1);
+void comp_m(CPU_t *cpu, int12 dst, int12 src, bool max);
 
 char T2C(char_t ternary_char);
 void C2T_conversion(char number, char_t rs);
@@ -101,14 +104,24 @@ void TernarySub_int12(int12 X, int12 Y, int12 sum);
 void TernarySub_int9(int9 X, int9 Y, int9 sum);
 
 void mlp_int12(int12 x, int12 y, int12 *product);
+void mlp_int9(int9 x, int9 y, int9 *product);
 
-void flip_int12(int12 X, int12 sum);
-void flip_int9(int9 X, int9 sum);
+void dvd_int12(int12 x, int12 y, int12 *rs);
+void dvd_int9(int9 x, int9 y, int9 *rs);
+
+void flip_int12(int12 X);
+void flip_int9(int9 X);
 
 void D2T_int12(int8_t number, int12 rs);
 void D2T_int9(int8_t number, int9 rs);
 
 void shift_int12(int12 *ternary_number, int12 by, bool left);
 void shift_int9(int9 *ternary_number, int9 by, bool left);
+
+trit is_zero_int12(int12 x);
+trit is_zero_int9(int9 x);
+
+void abs_int12(int12 x);
+void abs_int9(int9 x);
 
 #endif

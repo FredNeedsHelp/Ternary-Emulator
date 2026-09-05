@@ -9,8 +9,6 @@ results TERN_QUIT(CPU_t *cpu, memory *mem, results EXIT_CODE);
 void TernFetch(CPU_t *cpu, memory mem, int9 clock_cycle, char_t *data);
 results mem_read(memory *mem, int12 address, char_t *data);
 void GetReg(CPU_t *cpu, memory *mem, int9 clock_cycle, int12 *reg_dst, int12 *reg_src);
-trit comp(int12 destination, int12 source1);
-void comp_m(CPU_t *cpu, int12 dst, int12 src, bool max);
 results load_mem(CPU_t *cpu, int12 destination, memory *mem, int12 memoryAddress);
 results t_move(CPU_t *cpu, int12 destination, int12 source1);
 results store_mem(CPU_t *cpu, int12 destination, memory *mem, int12 memoryAddress);
@@ -33,7 +31,7 @@ int main(void)
         CPU_t cpu;
         if(CPU_reset(&cpu, &mem) != success) {Throw("CPU failed to iniatlise");}
         ProgramLoader(&mem, TASM);
-        int9 temp = {0}; D2T_int9(CPUcycle, temp);
+        int9 temp = {0}; D2T_int9(CPUcycle, temp); abs_int9(temp);
         results rs = CPU_execute(&cpu, &mem, temp);
         if(rs != success) {printf("CPU has occured a error code: %d\n", rs);}
         CPU_status_end(cpu, rs);
@@ -95,7 +93,8 @@ results CPU_execute(CPU_t *cpu, memory *mem, int9 clock_cycle) //clock cycle acc
 {     
         printf("Clock Cycle(s) : %d\n", T2D_int9(clock_cycle));
 
-        while (T2D_int9(clock_cycle) > 0)
+        //more efficient than checking if clock cycle is larger than 0, abs is used so clock cycle cant be neg.
+        while (is_zero_int9(clock_cycle) != pos) 
         {
                 char_t instruction;
                 TernFetch(cpu, *mem, clock_cycle, &instruction);
@@ -109,7 +108,10 @@ results CPU_execute(CPU_t *cpu, memory *mem, int9 clock_cycle) //clock cycle acc
                 switch(inst2bin)
                 {
                         case dvd:
-                                //Add Code Later
+                                GetReg(cpu, mem, clock_cycle, &reg_dst, &reg_src);  
+                                dst_index = T2D_int12(reg_dst), 
+                                src_index = T2D_int12(reg_src);          
+                                dvd_int12(cpu->registers[dst_index], cpu->registers[src_index], &cpu->registers[dst_index]);
                                 break;
 
                         case mlp:
@@ -156,7 +158,7 @@ results CPU_execute(CPU_t *cpu, memory *mem, int9 clock_cycle) //clock cycle acc
                         case flp:
                                 GetReg(cpu, mem, clock_cycle, &reg_dst, NULL);  
                                 dst_index = T2D_int12(reg_dst);
-                                flip_int12(cpu->registers[dst_index], cpu->registers[dst_index]);
+                                flip_int12(cpu->registers[dst_index]);
                                 break;
 
                         case load:
@@ -224,7 +226,9 @@ results CPU_execute(CPU_t *cpu, memory *mem, int9 clock_cycle) //clock cycle acc
                                 Throw("No Instruction was set %c", inst2bin);
                                 break;
                 }
-        }             
+        } 
+        
+        return depleted_cycle; //just in-case cpu runs out of clock cycle
 }
 
 void TernFetch(CPU_t *cpu, memory mem, int9 clock_cycle, char_t *data)
@@ -289,6 +293,8 @@ trit comp(int12 destination, int12 source1) //compare 2 register values
         if(reg1 > reg2) return pos;
         else if(reg1 < reg2) return neg;
         else return net;
+
+        //Refactor later to not use such cheap tricks.
 }
 
 void comp_m(CPU_t *cpu, int12 dst, int12 src, bool max) //compare min|max, the m stands for both.
@@ -335,6 +341,7 @@ void reg_decoder(char_t cell, int12 dst, int12 src) //returns an int9
 {
         int packed = T2C(cell);   
         D2T_int12(packed % register_count, dst); //destination
+        if(src == NULL) return;
         D2T_int12((packed / register_count) % register_count, src); //source1
         return;
 }

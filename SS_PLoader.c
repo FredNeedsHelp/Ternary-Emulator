@@ -20,6 +20,7 @@ op_codes LookUpTable(char *token)
         if(strcmp(token, "quit") == 0) return quit;     
         if(strcmp(token, "set") == 0) return set;          
         if(token[0] == ';') return skip;
+        if(strcmp(token, ":") == 0) return label;
         if(strcmp(token, "halt") == 0) return halt;
         if(strcmp(token, "shl") == 0) return shl;
         if(strcmp(token, "shr") == 0) return shr;  
@@ -81,7 +82,7 @@ int Parse4Number(char *buffer)
                 trit sign = net;
 
                 if(!isdigit(buffer[i]) || ( i > 0 && isalpha(buffer[i - 1]))) {continue;}
-                if(ispunct(buffer[i - 1]) != 0) {sign = neg;}
+                if((ispunct(buffer[i - 1]) && i > 0) != 0) {sign = neg;}
                 else {sign = pos;}
 
                 int numb = 0;
@@ -210,6 +211,7 @@ void ProgramLoader(memory *mem, char *tasm_name)
                                         WriteMemTASM(mem, &address, &code);
                                         flag[0] = State2Flag(mem, numb);
                                         WriteMemTASM(mem, &address, &flag);
+                                        //Add if statement to check if its a memory address or label.
                                         Number2Mem(mem, regs, &address);
                                         break;
                                 case move:
@@ -240,6 +242,12 @@ void ProgramLoader(memory *mem, char *tasm_name)
                                 case skip:
                                         op = NULL; //Skip the Line
                                         continue;
+
+                                case label:
+                                        //Save all chars before the : into mem and memory address with it.
+                                        op = NULL; //Skip the Line
+                                        continue;
+
                                 case halt:
                                         C2T_conversion(halt, code);
                                         WriteMemTASM(mem, &address, &code);
