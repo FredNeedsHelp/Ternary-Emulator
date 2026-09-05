@@ -10,8 +10,8 @@ This is an early prototype, many bugs will be present and I have only tested a s
 
 **Notes, Directions, and Extra**:
 
-At the moment, the TASM code and Assembler cant process negative numbers; however, the CPU can work and store/load negative numbers.
-if you truly require negative numbers, use the flip function temporarily. This will be fixed next commit. 
+At the moment, labels do not exist. labels for TASM will be added next commit (hopefully). Divison (DVD) is also implemented, but is using cheap tricks (converting the numbers into decimals then doing divison).
+Trit divison isnt really working at the moment, the attempt at the moment is commented out. (could be found in the math source file).
 
 Im happy to announce that the Program Loader is complete, and now you can write your own custom TASM (Ternary Assembly) files
 to make your own program. 
@@ -19,6 +19,7 @@ to make your own program.
 To load the program into the emulator make sure to provide a directory or place the file next to the exe.
 
 to build the program use gcc: gcc scrappy_striker.c SS_PLoader.c scrappy_striker_math.c -o scrappy_striker
+
 The main scrappy_striker.c does include a windows header for execution measurements, if your using linux/macos. simply edit the main function to replace windows with POSIX/UNIX func. 
 
 ISA to write your own TASM (Ternary Assembly) code:
@@ -39,7 +40,7 @@ ISA to write your own TASM (Ternary Assembly) code:
 | `flp` | 12 | Negative op, named flip to change number "polarity" | implemented |
 | `set` | 13 | Set a number to a register | implemented |
 | `mlp` | 14 | Multiply between 2 regs | implemented |
-| `dvd` | 15 | Divide between 2 regs | NOT IMPLEMENTED YET |
+| `dvd` | 15 | Divide between 2 regs | implemented |
 | `quit` | 0 | Quits the program | Not recommended if using DUMP |
 | `cyc_def` | 24 | defines how many cycles the CPU should run for | implemented |
 | `halt` | 26 | Halt stops the CPU immediately | implemented |
@@ -58,9 +59,7 @@ TASM code now requires an exit code when using quit ISA instruction, use 0 for s
 Leaving it empty will result in a error / undefined behavior.
 
 List of future additions:
-- [ ] Assembler accepts Negative Numbers
-- [ ] Dvd (division)
+- [ ] True Dvd (division)
 - [ ] Labels for Jump (control flaw)
-- [ ] More Abstractions/TISA instructions.
 
 Ill probably have more stuff to add, but forgot to put it in the list. 
