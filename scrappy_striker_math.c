@@ -570,7 +570,7 @@ void dvd_int9(int9 x, int9 y, int9 *rs)
 
         //Temp. Cheap Trick.
         uint8_t sum = T2D_int9(x) / T2D_int9(y);
-        int9 tmp_rs; D2T_int12(sum, tmp_rs);
+        int9 tmp_rs; D2T_int9(sum, tmp_rs);
         memcpy(rs, tmp_rs, sizeof(int9));
         return;
 }
