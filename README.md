@@ -2,7 +2,7 @@
 This is the basic core code for a ternary emulator made in C. Nicknamed Scrappy Striker, because im going to try build a ternary 
 computer with scraps and it will strike the world with its awesomeness. 
 - - -
-I would like to note that I have imposed a few limitations on the emulator, such as the ram being 27 cells of size big (3^3 = 27, 27 * char_t(5) = 135 trits of memory) even if the memory address can support much more. same also applies to the registries.
+I would like to note that I have imposed a few limitations on the emulator, such as the ram being 85 cells big, which equates to 1020 trits of data available to the system. The memory address system can handle much more, roughly being able to handle half a million addresses.
 
 if you would like to change them, you can find the definitions in the scrappy_striker header (scrappy_striker.h).
 
@@ -10,17 +10,11 @@ This is an early prototype, many bugs will be present and I have only tested a s
 
 **Notes, Directions, and Extra**:
 
-At the moment, labels do not exist. labels for TASM will be added next commit (hopefully). Divison (DVD) is also implemented, but is using cheap tricks (converting the numbers into decimals then doing divison).
-Trit divison isnt really working at the moment, the attempt at the moment is commented out. (could be found in the math source file).
-
-Im happy to announce that the Program Loader is complete, and now you can write your own custom TASM (Ternary Assembly) files
-to make your own program. 
+As I have promised, Labels have been added. Check the Easy_Labels.tasm and the fibonci_sequence.tasm to see how labels are used. (fibonci_sequence showcasing recursion/loops).
 
 To load the program into the emulator make sure to provide a directory or place the file next to the exe.
 
-to build the program use gcc: gcc scrappy_striker.c SS_PLoader.c scrappy_striker_math.c -o scrappy_striker
-
-The main scrappy_striker.c does include a windows header for execution measurements, if your using linux/macos. simply edit the main function to replace windows with POSIX/UNIX func. 
+I should note for anybody on a POSIX/UNIX system, that the main {scrappy_striker.c} does include a windows header for execution measurements, if your using linux/macos. simply edit the main and dump functions to replace windows with POSIX/UNIX alternatives. 
 
 ISA to write your own TASM (Ternary Assembly) code:
 
@@ -41,17 +35,18 @@ ISA to write your own TASM (Ternary Assembly) code:
 | `set` | 13 | Set a number to a register | implemented |
 | `mlp` | 14 | Multiply between 2 regs | implemented |
 | `dvd` | 15 | Divide between 2 regs | implemented |
+| `noop` | 16 | No Operation | implemented |
 | `quit` | 0 | Quits the program | Not recommended if using DUMP |
 | `cyc_def` | 24 | defines how many cycles the CPU should run for | implemented |
 | `halt` | 26 | Halt stops the CPU immediately | implemented |
 
-Any Negative is value is controlled by the system! if any negative op codes appear, your cooked lollll. (Check RAM DUMP to see op codes, use the values from either the header or this table. dont forgot that data is also mixed in with the op codes; however, just follow your tasm file. its quite easy to translate from tasm to memory (machine code).
+Any Negative is value is controlled by the system! if any negative op codes appear, your cooked lollll. (Check RAM DUMP to see op codes, use the values from either the header or this table. dont forgot that data is also mixed in with the op codes; however, just follow your tasm file. its quite easy to translate from tasm to memory (machine code). Btw, this does use a Von' Neumann Architecture if that wasn't clear.
 
-Also anything between 15 and 24 is reserved for future TISA (Ternary Instruction Set Architecture) instructions, such as abs. 
+Also anything between 16 and 24 is reserved for future TISA (Ternary Instruction Set Architecture) instructions, such as abs. 
 
 Use ; to comment in your code, anything and everything after the semicolon will not be interpreted by the assembler/parser/Program Loader
 
-Right, this readme / architect.txt is probably not up-to-date. skim the code if your facing a problem or need something.
+I would to also note that this readme.md / architect.txt is probably not up-to-date. skim the code if your facing a problem or need something.
 
 Control flow is fully working! Check the test.TASM file to see how it works. should be quite straightforward.
 
@@ -60,6 +55,6 @@ Leaving it empty will result in a error / undefined behavior.
 
 List of future additions:
 - [ ] True Dvd (division)
-- [ ] Labels for Jump (control flaw)
+- [ ] Standard Library for TASM code
 
 Ill probably have more stuff to add, but forgot to put it in the list. 
