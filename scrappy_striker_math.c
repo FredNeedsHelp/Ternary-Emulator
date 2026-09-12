@@ -1,11 +1,11 @@
 #include "scrappy_striker.h"
 
-char T2C(char_t ternary_char)
+int T2C(char_t ternary_char)
 {
         int result = 0;
         int pw = 1;
 
-        for(int i = 0; i < 5; i++)
+        for(int i = 0; i < Ternary_Char_Size; i++)
                 {
                         result += ternary_char[i] * pw;
                         pw *= 3;
@@ -273,17 +273,17 @@ void abs_int9(int9 x)
         return; 
 }
 
-void C2T_conversion(char number, char_t rs) //Char to ternary conversion
+void C2T_conversion(int number, char_t rs) //Char to ternary conversion
 {
         memset(rs, 0, sizeof(char_t));
         int i = 0;
 
         while(number != 0)
         {
-                if(i == 5) {break;} else if(i > 5) {Throw("Attempted to overflow; C2T");}
+                if(i == Ternary_Char_Size) {break;} else if(i > Ternary_Char_Size) {Throw("Attempted to overflow; C2T");}
 
-                int8_t q = number / 3;
-                int8_t r = number % 3;
+                int16_t q = number / 3;
+                int16_t r = number % 3;
     
                 switch (r)
                         {
@@ -360,7 +360,7 @@ void D2T_int9(int8_t number, int9 rs) //Decimal to ternary conversion
         return;
 }
 
-void D2T_int12(int8_t number, int12 rs) //Decimal to ternary conversion
+void D2T_int12(int16_t number, int12 rs) //Decimal to ternary conversion
 {
         memset(rs, 0, sizeof(int12));
         int i = 0;
@@ -369,8 +369,8 @@ void D2T_int12(int8_t number, int12 rs) //Decimal to ternary conversion
         {
                 if(i == 12) {break;} else if(i > 12) {Throw("Attempted to overflow; D2T");}
 
-                int8_t q = number / 3;
-                int8_t r = number % 3;
+                int16_t q = number / 3;
+                int16_t r = number % 3;
 
                         switch (r)
                         {
@@ -515,11 +515,11 @@ void mlp_int9(int9 x, int9 y, int9 *product)
 void dvd_int12(int12 x, int12 y, int12 *rs)
 {
         //Temp. Cheap Trick.
-        uint8_t sum = T2D_int12(x) / T2D_int12(y);
+        int16_t sum = T2D_int12(x) / T2D_int12(y);
         int12 tmp_rs; D2T_int12(sum, tmp_rs);
         memcpy(rs, tmp_rs, sizeof(int12));
         return;
-
+        
         //CANT FIGURE IT OUT!!!
         /*
         if(is_zero_int12(y) == pos) {Throw("Attempted to Divide by Zero; INFINITY");}
@@ -569,7 +569,7 @@ void dvd_int9(int9 x, int9 y, int9 *rs)
         //Still cant figure it out.
 
         //Temp. Cheap Trick.
-        uint8_t sum = T2D_int9(x) / T2D_int9(y);
+        int8_t sum = T2D_int9(x) / T2D_int9(y);
         int9 tmp_rs; D2T_int9(sum, tmp_rs);
         memcpy(rs, tmp_rs, sizeof(int9));
         return;

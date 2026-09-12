@@ -3,18 +3,18 @@
 
 //prototype funcs
 results CPU_reset(CPU_t *cpu, memory *mem);
-results CPU_execute(CPU_t *cpu, memory *mem, int9 clock_cycle);
+results CPU_execute(CPU_t *cpu, memory *mem, int12 clock_cycle);
 results TERN_QUIT(CPU_t *cpu, memory *mem, results EXIT_CODE);
 
-void TernFetch(CPU_t *cpu, memory mem, int9 clock_cycle, char_t *data);
+void TernFetch(CPU_t *cpu, memory mem, int12 clock_cycle, char_t *data);
 results mem_read(memory *mem, int12 address, char_t *data);
-void GetReg(CPU_t *cpu, memory *mem, int9 clock_cycle, int12 *reg_dst, int12 *reg_src);
+void GetReg(CPU_t *cpu, memory *mem, int12 clock_cycle, int12 *reg_dst, int12 *reg_src);
 results load_mem(CPU_t *cpu, int12 destination, memory *mem, int12 memoryAddress);
 results t_move(CPU_t *cpu, int12 destination, int12 source1);
 results store_mem(CPU_t *cpu, int12 destination, memory *mem, int12 memoryAddress);
 void CPU_status_end(CPU_t cpu, results rs);
 
-void DUMP(CPU_t cpu, memory mem);
+void DUMP(CPU_t cpu, memory mem, LabelInfo Label_info);
 LARGE_INTEGER freq, start, end;
 int CPUcycle = CPU_CYCLE_Default;
 
@@ -29,34 +29,56 @@ int main(void)
 
         memory mem;
         CPU_t cpu;
+        LabelInfo LI = {0};
+
         if(CPU_reset(&cpu, &mem) != success) {Throw("CPU failed to iniatlise");}
-        ProgramLoader(&mem, TASM);
-        int9 temp = {0}; D2T_int9(CPUcycle, temp); abs_int9(temp);
+        if(ProgramLoader(&mem, TASM, &LI) != success) Throw("Assembler Failed");
+        int12 temp = {0}; D2T_int12(CPUcycle, temp); abs_int12(temp);
         results rs = CPU_execute(&cpu, &mem, temp);
-        if(rs != success) {printf("CPU has occured a error code: %d\n", rs);}
+        if(rs != success) {printf("CPU has encountered an Error: %d\n", rs);}
         CPU_status_end(cpu, rs);
-        DUMP(cpu, mem);
+        DUMP(cpu, mem, LI);
 
         return 0;
 }
 
-void DUMP(CPU_t cpu, memory mem) //DUMPS ALL MEMORY AND CPU STATES
+void DUMP(CPU_t cpu, memory mem, LabelInfo Labels_Inf) //DUMPS ALL MEMORY, CPU STATES, AND LABELS (All Data basically)
 {
         printf("\n\n- - - - - - - DUMP LOG OF EMULATOR - - - - - - -\n\n");
 
-        //Prints Out Memory & CPU
-        for(int i = 0; i < MEMORY_SIZE; i++)
+        //Prints out labels
+        printf("Labels Produced By The Program:\n\n"); int l_counter = 0;
+        for(int x = 0; x < MAX_LABELS; x++)
         {
-                printf("RAM[%d]:", i);
-                printf("%d\n", T2C(mem.Data[i]));
+                if(Labels_Inf.Name[x][0] != '\0')
+                {
+                        printf("|Label Name: %s & Memory Address: %d |", Labels_Inf.Name[x], T2D_int12(Labels_Inf.MemoryAddress[x]));
+                        if(((x + 1) % 2) == 0) printf("\n"); 
+                        l_counter++;
+                }
+                
+                if(x + 1 == MAX_LABELS && l_counter == 0) printf("--NO LABELS PRODUCED--\n");
+                if(x + 1  == MAX_LABELS) printf("\n\n");
         }
 
+        //Prints Out Memory & CPU
+        printf("Memory DUMP:\n\n");
+        for(int i = 0; i < MEMORY_SIZE; i++)
+        {
+                printf("| RAM[%d]:", i);
+                
+                int tmp = T2C(mem.Data[i]);
+                if(tmp > 9) printf("%d|", T2C(mem.Data[i]));
+                else printf("%d |", T2C(mem.Data[i]));
+                if(((i + 1) % 5) == 0) printf("\n"); 
+        }
+
+        printf("\nCPU DUMP:\n");
         printf("\nPointers: %d\nStack: %d\nFlag: %d", T2D_int12(cpu.pointer), T2D_int12(cpu.stack), cpu.flag);
 
         for(int i = 0; i < register_count; i++)
         {
-                printf("\nRegister %d: ", i);
-                printf("%d", T2D_int12(cpu.registers[i]));
+                printf("\nRegister[%d]: %d", i, T2D_int12(cpu.registers[i]));
         }
 
         QueryPerformanceCounter(&end);
@@ -89,16 +111,16 @@ void CPU_status_end(CPU_t cpu, results rs)
         }
 }
 
-results CPU_execute(CPU_t *cpu, memory *mem, int9 clock_cycle) //clock cycle accepts only a int9
+results CPU_execute(CPU_t *cpu, memory *mem, int12 clock_cycle)
 {     
-        printf("Clock Cycle(s) : %d\n", T2D_int9(clock_cycle));
+        printf("Clock Cycle(s) : %d\n", T2D_int12(clock_cycle));
 
         //more efficient than checking if clock cycle is larger than 0, abs is used so clock cycle cant be neg.
-        while (is_zero_int9(clock_cycle) != pos) 
+        while (is_zero_int12(clock_cycle) != pos) 
         {
                 char_t instruction;
                 TernFetch(cpu, *mem, clock_cycle, &instruction);
-                printf("%d\n", T2D_int9(clock_cycle));
+                printf("%d\n", T2D_int12(clock_cycle));
 
                 unsigned char inst2bin = T2C(instruction);
                 int12 reg_dst = tern_int_zero, reg_src = tern_int_zero, memoryAddress = tern_int_zero, set_number = tern_int_zero;
@@ -144,8 +166,9 @@ results CPU_execute(CPU_t *cpu, memory *mem, int9 clock_cycle) //clock cycle acc
                         
                         case jmp:
                                 TernFetch(cpu, *mem, clock_cycle, &flg);
-                                if(cpu->flag != flg[0]) break;
+                                //putting this before the check allows the counter to advance correctly even if the jump never happend.
                                 TernFetch(cpu, *mem, clock_cycle, &address);
+                                if(cpu->flag != flg[0]) break;                         
                                 memcpy(memoryAddress, address, sizeof(char_t));
                                 memcpy(cpu->pointer, memoryAddress, sizeof(int12));
                                 break;
@@ -231,18 +254,20 @@ results CPU_execute(CPU_t *cpu, memory *mem, int9 clock_cycle) //clock cycle acc
         return depleted_cycle; //just in-case cpu runs out of clock cycle
 }
 
-void TernFetch(CPU_t *cpu, memory mem, int9 clock_cycle, char_t *data)
+void TernFetch(CPU_t *cpu, memory mem, int12 clock_cycle, char_t *data)
 {
         //char_t tmp_data; //= mem.Data[T2D_converter(cpu.pointer, true)];
-        if(mem_read(&mem, cpu->pointer, data) != success) {Throw("failed to read memory");}
+        //printf("\n[Pointer DATA: %d]\n", T2D_int12(cpu->pointer));
+        results rs_mem = mem_read(&mem, cpu->pointer, data);
+        if(rs_mem != success) Throw("Ternary CPU fetch, failed to read memory: %d", rs_mem);
         //cpu->pointer = TernaryAdd(cpu->pointer, D2T_conversion(1, true), true);
         int12 rs = {0};
         D2T_int12(1, rs);
         TernaryAdd_int12(cpu->pointer, rs, cpu->pointer);
         //*clock_cycle = TernarySub(*clock_cycle, D2T_conversion(1, false), false);
-        int9 temp = {0};
-        D2T_int9(1, temp);
-        TernarySub_int9(clock_cycle, temp, clock_cycle);
+        int12 temp = {0};
+        D2T_int12(1, temp);
+        TernarySub_int12(clock_cycle, temp, clock_cycle);
         return;      
 }
 
@@ -266,7 +291,8 @@ results t_move(CPU_t *cpu, int12 destination, int12 source1) //move function to 
 results store_mem(CPU_t *cpu, int12 destination, memory *mem, int12 memoryAddress)
 {
         int add_temp = T2D_int12(memoryAddress);
-        if(add_temp < 0 || add_temp >= MEMORY_SIZE) {return invalid_memory;}
+        if(add_temp < 0) return invalid_memory;
+        if(add_temp >= MEMORY_SIZE) {Throw("--SYSTEM ERROR: OUT OF MEMORY--"); return out_of_mem;}
 
         int rg_count = T2D_int12(destination);
         memcpy(mem->Data[add_temp], cpu->registers[rg_count], sizeof(char_t));
@@ -277,7 +303,8 @@ results store_mem(CPU_t *cpu, int12 destination, memory *mem, int12 memoryAddres
 results load_mem(CPU_t *cpu, int12 destination, memory *mem, int12 memoryAddress)
 {
         int add_temp = T2D_int12(memoryAddress);
-        if(add_temp < 0 || add_temp >= MEMORY_SIZE) {return invalid_memory;}
+        if(add_temp < 0) return invalid_memory;
+        if(add_temp >= MEMORY_SIZE) {Throw("--SYSTEM ERROR: OUT OF MEMORY--"); return out_of_mem;}
 
         int rg_count = T2D_int12(destination);
         //*cpu->registers[rg_count].int9 = *mem->Data[T2D_converter(memoryAddress, false)];
@@ -320,8 +347,9 @@ void comp_m(CPU_t *cpu, int12 dst, int12 src, bool max) //compare min|max, the m
 results mem_read(memory *mem, int12 address, char_t *data) //reads memory with safe-checks
 {
         int add_temp =  T2D_int12(address);
-        if(add_temp < 0 || add_temp >= MEMORY_SIZE) {return invalid_memory;}
-        else
+        if(add_temp < 0) return invalid_memory;
+        if(add_temp >= MEMORY_SIZE) {Throw("--SYSTEM ERROR: OUT OF MEMORY--"); return out_of_mem;}
+
         //data = mem->Data[add_temp];
         memcpy(data, &mem->Data[add_temp], sizeof(char_t));
         return success;
@@ -329,15 +357,16 @@ results mem_read(memory *mem, int12 address, char_t *data) //reads memory with s
 
 results mem_write(memory *mem, int12 address, char_t *data)//writes memory with safe-checks
 {
-        int add_temp = T2D_int12(address);
-        if(add_temp < 0 || add_temp >= MEMORY_SIZE) {return invalid_memory;}
-        else
+        int add_temp =  T2D_int12(address);
+        if(add_temp < 0) return invalid_memory;
+        if(add_temp >= MEMORY_SIZE) {Throw("--SYSTEM ERROR: OUT OF MEMORY--"); return out_of_mem;}
+
         //*mem->Data[add_temp] = *data;
         memcpy(&mem->Data[add_temp], data, sizeof(char_t));
         return success;
 }
 
-void reg_decoder(char_t cell, int12 dst, int12 src) //returns an int9
+void reg_decoder(char_t cell, int12 dst, int12 src)
 {
         int packed = T2C(cell);   
         D2T_int12(packed % register_count, dst); //destination
@@ -346,7 +375,7 @@ void reg_decoder(char_t cell, int12 dst, int12 src) //returns an int9
         return;
 }
 
-void GetReg(CPU_t *cpu, memory *mem, int9 clock_cycle, int12 *reg_dst, int12 *reg_src)
+void GetReg(CPU_t *cpu, memory *mem, int12 clock_cycle, int12 *reg_dst, int12 *reg_src)
 {
         char_t temp_cell = {0};
         TernFetch(cpu, *mem, clock_cycle, &temp_cell);

@@ -1,0 +1,27 @@
+CYC 50
+
+set R0 -2
+set R1 -2
+set R2 -42
+
+cmp R0 R1
+jump NET TestLabel
+jump POS TestLabel2
+quit 0
+
+TestLabel:
+        set R1 69
+        add R0 R1
+        store R0 59
+        set R0 10
+        mlp R2 R0
+        load R0 59 ; sets r0, r1, and r2 to 67, 69, 420 respectivly 
+        quit 0
+
+TestLabel2:
+        set R0 8
+        store R0 55
+        store R0 58
+        set R1 5
+        store r1 59 ; This Spells 80085 in the last row of memory (USE DUMP, this also assume the mem max size is 60)
+        quit 0

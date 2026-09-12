@@ -1,0 +1,28 @@
+; fibonci_sequence.tasm
+
+CYC 570 ; ~561 cyc is need to calculate F(20).
+
+set R0 20 ; Counter (N)
+set R1 1 ; First Value
+set R2 0 ; Second Value
+
+jump NET Loop ; Flag is default net
+
+Loop:
+        store R1 0      ; store R1 Value     
+        add   R1 R2     ; addition
+        load  R2 0      ; R2 takes R1 og value
+        store R1 1      ; Store R1 value
+        set R1 1        ; Set R1 to 1
+        sub R0 R1       ; decrement the counter
+        set R1 0        ; set R1 to 0
+        cmp R0 R1       ; Compare if the counter is equal to 0 (R1)
+        load R1 1       ; Load R1 og value
+        jump POS Loop   ; Jumps if the counter does not equal to zero
+
+        move R0 R2      ; If counter is equal to 0, the sum is moved into the counter
+        set R1 0        ; Setting both R1 & R2 to 0
+        set R2 0
+        quit 0          ; Quit with a success exit code
+
+        ; Value of F(n) is found in R0.

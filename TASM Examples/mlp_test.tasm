@@ -1,7 +1,7 @@
 CYC 9
 
-set R0 20
-set R1 5
+set R0 250
+set R1 2
 mlp R0 R1
 
 quit 0
