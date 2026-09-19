@@ -2,6 +2,11 @@
 This is the basic core code for a ternary emulator made in C. Nicknamed Scrappy Striker, because im going to try build a ternary 
 computer with scraps and it will strike the world with its awesomeness. 
 - - -
+As of 19/09/2026, development will stop or at the very least be extremely slow. I have reached a point where the emulator is very capable while being still outputting correctly, so I have decided that I should start
+designing the Ternary ALU and the real hardware for the real Ternary CPU. That was always the goal, this emulator was simply a requisite for that goal.
+
+if you'd like to ask me any questions or help/assist me, here is my discord: thedevthatcantcode
+
 I would like to note that I have imposed a few limitations on the emulator, such as the ram being 85 cells big, which equates to 1020 trits of data available to the system. The memory address system can handle much more, roughly being able to handle half a million addresses.
 
 if you would like to change them, you can find the definitions in the scrappy_striker header (scrappy_striker.h).
@@ -45,6 +50,8 @@ Any Negative is value is controlled by the system! if any negative op codes appe
 Also anything between 16 and 24 is reserved for future TISA (Ternary Instruction Set Architecture) instructions, such as abs. 
 
 Use ; to comment in your code, anything and everything after the semicolon will not be interpreted by the assembler/parser/Program Loader
+I should also note that adding comments in-front of instructions that take only a single argument like quit and cyc will be UB and the 
+program loader will fail (and throw a Unkown_Halt which will be -1). 
 
 I would to also note that this readme.md / architect.txt is probably not up-to-date. skim the code if your facing a problem or need something.
 
