@@ -1,6 +1,7 @@
 ; fibonci_sequence.tasm
 
-CYC 570 ; ~561 cyc is need to calculate F(20).
+; ~561 cyc is need to calculate F(20).
+CYC 570 
 
 set R0 20 ; Counter (N)
 set R1 1 ; First Value
@@ -23,6 +24,12 @@ Loop:
         move R0 R2      ; If counter is equal to 0, the sum is moved into the counter
         set R1 0        ; Setting both R1 & R2 to 0
         set R2 0
-        quit 0          ; Quit with a success exit code
+        quit 0          
+	; Quit with a success exit code
 
         ; Value of F(n) is found in R0.
+
+; Note that int12 may hold half a million values
+; half of that is reserved for negative #
+; which allows for quarter of a million allowed to be pos
+; which is why exceeding f(27) will start wrapping

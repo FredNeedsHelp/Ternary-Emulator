@@ -7,15 +7,15 @@
 #include <string.h>
 #include <ctype.h>
 #include <stdarg.h>
-#include <limits.h> //This is alr included in C23, but I will include it for anybody building in previous C standards.
+
+#include <limits.h> //This emulator is meant to be built in C23, however; I will support older versions of C-standards
+#include <stdbool.h> //At this moment (and to my knowledge), my code is supported by C99. im too lazy to check.
 
 //Settings!
-#define register_count 3
-#define MEMORY_SIZE 85 //cells of data, a single cell is a char_t which is 5 trits long. 5 * Memory_Size = How many trits the system has. 
-#define CPU_CYCLE_Default 27
-#define MAX_LABELS 20
-
-#define ArraySize(arr) (sizeof(arr) / sizeof(arr[0]))
+#define register_count 3 //For testing, i will be using 3 regs (2 regs is the min btw). 
+#define MEMORY_SIZE 85 //cells of data, a single cell is a char_t which is 12 trits long. 12 * Memory_Size = How many trits the system has. 
+#define CPU_CYCLE_Default 27 //Use CYC in TASM code to change.
+#define MAX_LABELS 20 //Labels are very memory & cycle intensive, if your planning on using a large # of labels its also advised to increase memory and cycles.
 
 extern int CPUcycle;
 
@@ -26,7 +26,7 @@ typedef enum
         neg = -1
 } trit;
 
-#define Ternary_Char_Size 12
+#define Ternary_Char_Size 12 //Changed from 5 to 12 so mem to reg(and vice versa) would not be UB and for mem cell to hold more than 243 values (-121 to 121)
 #define Ternary_short_int 9
 #define Ternary_int 12
 #define Ternary_wide_int 24
@@ -36,11 +36,13 @@ typedef trit int9[9]; //9-trit values
 typedef trit int12[12]; //12-trit values
 typedef trit int24[24]; //24-trit values
 
+//Might add a "Normal int" that is X long and can change the emulator architecture.
+
 static const char surprise[] = "How in the flying f*ck did you get this error? this is meant to be unreachable.\npersonally reach to me if you get this";
 
-#define tern_zero (trit)0
-#define tern_int_zero {0}
-#define tern_char_zero {0}
+#define tern_zero (trit)0 //In earlier versions of the emulator, tern was used to refer to trit; due to this being load-bearing and me being a lazy piece of shit.
+#define tern_int_zero {0} //Im not changing it unless it starts to annoy me, which sounds like never as my laziness exceeds all non-critical feelings. 
+#define tern_char_zero {0} //I also know this is a 5 min fix, but lwk... I js dont wanna.
 
 typedef enum 
 {     
@@ -55,10 +57,10 @@ typedef enum
         cmp = 9, //compare
         max = 10, 
         min = 11,
-        flp = 12, //this is negative op, but due to naming conventions. it will be called flip to flip the numbers "polarity" (✓)
+        flp = 12, //this is negative op, but due to naming conventions. it will be called flip to flip the numbers "polarity"
         set = 13,
         mlp = 14, 
-        dvd = 15, //Not Added(yet)
+        dvd = 15, //Semi-dvd
         noop = 16, //No Operation
         quit = 0,
         halt = 26,
@@ -69,8 +71,14 @@ typedef enum
         Unknown_Halt = -1,
 } op_codes;
 
-//quit and halt are at the ends of the spectrum, if a overflow occurs and affects a "critical" system, the system would shutdown.
-//the program should be able to leave and log it.
+/*
+All Numbers between 16-23 is reserved for future TISA instructions, but due to all the primitives (that are needed) are already added. 
+New TISA instructions would most likely regard the stack, e.g: pop, push, call, return, etc. OR, might be abstractions even though
+TISA is a RISC-based instruction set. 
+
+TISA is a blend between RISC and CISC, if you havent realised yet. small Instruction set while still using flags for branching.
+*/
+
 
 typedef enum 
 {
@@ -91,12 +99,12 @@ typedef struct
         //pointer means the program counter btw
         int12 registers[register_count], pointer, stack;      
         trit flag;
-        bool halt;
+        bool halt; //might change all bools to trits so it fits the vibe, even tho the third value would probably will never be used.
 } CPU_t;
 
 typedef struct
 {
-        char Name[MAX_LABELS][243]; //Name of the label, change later to be more memory efficient.
+        char Name[MAX_LABELS][243]; //Name of the label
         int12 MemoryAddress[MAX_LABELS]; //Memory Address the label points to
 } LabelInfo;
 
@@ -106,9 +114,14 @@ results mem_write(memory *mem, int12 address, char_t *data);
 trit comp(int12 destination, int12 source1);
 void comp_m(CPU_t *cpu, int12 dst, int12 src, bool max);
 
-int T2C(char_t ternary_char);
-void C2T_conversion(int number, char_t rs);
 results ProgramLoader(memory *mem, char *tasm_name, LabelInfo *Labels_Info);
+
+//(Common) Math Functions Below: 
+
+int T2C(char_t ternary_char); //Ternary to Char/number
+void C2T_conversion(int number, char_t rs);
+//Due to char most commenly being a uint8, which is 256, it does not cleanly convert into new Char_t which is 3^12, which is half a million.
+//C2T is now an Int to Char_T converter. 
 
 int T2D_int12(int12 TernNumber);
 int T2D_int9(int9 TernNumber);

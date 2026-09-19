@@ -22,7 +22,7 @@ int main(void)
 {
         char TASM[243];
         printf("TASM file name: ");
-        scanf("%s", TASM);
+        scanf("%243s", TASM); //change later, unsafe lol; but lwk if it works it works.
 
         QueryPerformanceFrequency(&freq);
         QueryPerformanceCounter(&start);
@@ -30,6 +30,7 @@ int main(void)
         memory mem;
         CPU_t cpu;
         LabelInfo LI = {0};
+        //Might make these globals, so Throw function will also DUMP for better debugging.
 
         if(CPU_reset(&cpu, &mem) != success) {Throw("CPU failed to iniatlise");}
         if(ProgramLoader(&mem, TASM, &LI) != success) Throw("Assembler Failed");
@@ -41,6 +42,8 @@ int main(void)
 
         return 0;
 }
+
+//Might make a stand-alone source file and have a debugging revolution basically (just make every error a known, and not spit out unknown_error).
 
 void DUMP(CPU_t cpu, memory mem, LabelInfo Labels_Inf) //DUMPS ALL MEMORY, CPU STATES, AND LABELS (All Data basically)
 {
@@ -314,14 +317,16 @@ results load_mem(CPU_t *cpu, int12 destination, memory *mem, int12 memoryAddress
 
 trit comp(int12 destination, int12 source1) //compare 2 register values
 {
-        int reg1 = T2D_int12(destination);
-        int reg2 = T2D_int12(source1);
+        int12 diff = {0};
+        TernarySub_int12(destination, source1, diff);
+        if(is_zero_int12(diff) == pos) return net;
 
-        if(reg1 > reg2) return pos;
-        else if(reg1 < reg2) return neg;
-        else return net;
-
-        //Refactor later to not use such cheap tricks.
+        for(int i = (Ternary_int - 1); i >= 0; i--)
+        {
+                if(diff[i] != 0) return diff[i];
+        }
+        
+        return halt; //fall-back
 }
 
 void comp_m(CPU_t *cpu, int12 dst, int12 src, bool max) //compare min|max, the m stands for both.
@@ -409,3 +414,5 @@ void Throw(const char * __restrict__ LogMSG,...) //Throws an error
 
         exit(1);
 }
+
+//Throw used to write to a .txt file, but that got annoying quick. 

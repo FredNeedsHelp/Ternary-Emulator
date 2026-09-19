@@ -1,5 +1,7 @@
 #include "scrappy_striker.h"
 
+int Tern_int_narrow = Ternary_short_int - 1;
+
 int T2C(char_t ternary_char)
 {
         int result = 0;
@@ -19,7 +21,7 @@ int T2D_int12(int12 TernNumber) //Ternary to Decimal Converter
         int result = 0;
         int pw = 1;
 
-        for(int i = 0; i < 12; i++)
+        for(int i = 0; i < Ternary_int; i++)
                 {
                         result += TernNumber[i] * pw;
                         pw *= 3;
@@ -32,7 +34,7 @@ int T2D_int9(int9 TernNumber) //Ternary to Decimal Converter
         int result = 0;
         int pw = 1;
 
-        for(int i = 0; i < 9; i++)
+        for(int i = 0; i < Ternary_short_int; i++)
                 {
                         result += TernNumber[i] * pw;
                         pw *= 3;
@@ -44,7 +46,7 @@ void TernaryAdd_int9(int9 X, int9 Y, int9 sum) //Both X and Y have to be the sam
 {
         trit carry = {0};
 
-        for(int i = 0; i < 9; i++)
+        for(int i = 0; i < Ternary_short_int; i++)
         {        
                 int temp_sum = X[i] + Y[i] + carry;
                 
@@ -92,7 +94,7 @@ void TernaryAdd_int12(int12 X, int12 Y, int12 sum) //Both X and Y have to be the
 {
         trit carry = {0};
 
-        for(int i = 0; i < 12; i++)
+        for(int i = 0; i < Ternary_int; i++)
         {        
                 int temp_sum = X[i] + Y[i] + carry;
                 
@@ -155,7 +157,7 @@ void flip_int9(int9 X)
         int9 temp_x;
         memset(temp_x, 0, sizeof(int9));
 
-        for(int i = 0; i < 9; i++)
+        for(int i = 0; i < Ternary_short_int; i++)
         {
                 switch (X[i])
                 {
@@ -180,7 +182,7 @@ void flip_int12(int12 X)
         int12 temp_x;
         memset(temp_x, 0, sizeof(int12));
 
-        for(int i = 0; i < 12; i++)
+        for(int i = 0; i < Ternary_int; i++)
         {
                 switch (X[i])
                 {
@@ -203,7 +205,7 @@ void flip_int12(int12 X)
 //Returns the sign of the Ternary int12 number
 trit signis_int12(int12 x) 
 {
-        for(int i = 11; i >= 0; i--)
+        for(int i = (Ternary_int - 1); i >= 0; i--)
         {
                 if(x[i] != 0)
                 {
@@ -217,7 +219,7 @@ trit signis_int12(int12 x)
 //returns int9
 trit signis_int9(int9 x) 
 {
-        for(int i = 8; i >= 0; i--)
+        for(int i = Tern_int_narrow; i >= 0; i--)
         {
                 if(x[i] != 0)
                 {
@@ -231,7 +233,7 @@ trit signis_int9(int9 x)
 //Checks if the ternary number is zero
 trit is_zero_int12(int12 x) 
 {
-        for(int i = 0; i < 12; i++)
+        for(int i = 0; i < Ternary_int; i++)
         {
                 if(x[i] != 0) return neg;
         }
@@ -242,7 +244,7 @@ trit is_zero_int12(int12 x)
 //Checks if the ternary number is zero
 trit is_zero_int9(int9 x) 
 {
-        for(int i = 0; i < 9; i++)
+        for(int i = 0; i < Ternary_short_int; i++)
         {
                 if(x[i] != 0) return neg;
         }
@@ -324,7 +326,7 @@ void D2T_int9(int8_t number, int9 rs) //Decimal to ternary conversion
 
         while(number != 0)
         {
-                if(i == 9) {break;} else if(i > 9) {Throw("Attempted to overflow; D2T");}
+                if(i == Ternary_short_int) {break;} else if(i > Ternary_short_int) {Throw("Attempted to overflow; D2T");}
 
                 int8_t q = number / 3;
                 int8_t r = number % 3;
@@ -367,7 +369,7 @@ void D2T_int12(int16_t number, int12 rs) //Decimal to ternary conversion
 
         while(number != 0)
         {
-                if(i == 12) {break;} else if(i > 12) {Throw("Attempted to overflow; D2T");}
+                if(i == Ternary_int) {break;} else if(i > Ternary_int) {Throw("Attempted to overflow; D2T");}
 
                 int16_t q = number / 3;
                 int16_t r = number % 3;
@@ -409,14 +411,15 @@ void D2T_int12(int16_t number, int12 rs) //Decimal to ternary conversion
 void shift_int12(int12 *ternary_number, int12 by, bool left)
 {
         int by_amount = T2D_int12(by);
+        int Tern_int_ = Ternary_int - 1;
 
         if(left)
         {
                         for(int i = 0; i < by_amount; i++)
                         {
-                                for(int x = 11; x >= 0; x--)
+                                for(int x = Tern_int_; x >= 0; x--)
                                 {
-                                   (*ternary_number)[x] = (*ternary_number)[x - 1];  
+                                   (*ternary_number)[x] = (*ternary_number)[x - 1];  //UB, when X = 0, array starts reading from outside. 
                                 }
 
                                 (*ternary_number)[i] = net;
@@ -427,12 +430,12 @@ void shift_int12(int12 *ternary_number, int12 by, bool left)
         {
                         for(int i = 0; i < by_amount; i++)
                         {
-                                for(int x = 0; x <= 11; x++)
+                                for(int x = 0; x <= Tern_int_; x++)
                                 {
                                    (*ternary_number)[x] = (*ternary_number)[x + 1];  
                                 }
 
-                                (*ternary_number)[11 - i] = net;
+                                (*ternary_number)[Tern_int_ - i] = net;
                         }
         }
         return;
@@ -446,7 +449,7 @@ void shift_int9(int9 *ternary_number, int9 by, bool left)
         {
                         for(int i = 0; i < by_amount; i++)
                         {
-                                for(int x = 8; x >= 0; x--)
+                                for(int x = Tern_int_narrow; x >= 0; x--)
                                 {
                                    (*ternary_number)[x] = (*ternary_number)[x - 1];  
                                 }
@@ -459,12 +462,12 @@ void shift_int9(int9 *ternary_number, int9 by, bool left)
         {
                         for(int i = 0; i < by_amount; i++)
                         {
-                                for(int x = 0; x <= 8; x++)
+                                for(int x = 0; x <= Tern_int_narrow; x++)
                                 {
                                    (*ternary_number)[x] = (*ternary_number)[x - 1];  
                                 }
 
-                                (*ternary_number)[8 - i] = net;
+                                (*ternary_number)[Tern_int_narrow - i] = net;
                         }
         }
         return;
@@ -523,7 +526,7 @@ void dvd_int12(int12 x, int12 y, int12 *rs)
         //CANT FIGURE IT OUT!!!
         /*
         if(is_zero_int12(y) == pos) {Throw("Attempted to Divide by Zero; INFINITY");}
-        if(is_zero_int12(x) == pos) {memset(rs, 0, sizeof(int12)); printf("Dvd enumarator is zero"); return;}
+        if(is_zero_int12(x) == pos) {memset(rs, 0, sizeof(int12)); printf("Dvd enum is zero"); return;}
 
         int12 temp, ternary_i, temp_x, temp_y, q;
         memset(temp, 0, sizeof(int12));

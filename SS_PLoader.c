@@ -28,11 +28,11 @@ const char *LK_code[] =
 
 op_codes LookUpTable(char *token, LabelInfo Labels_Info)
 {     
-        if(token == NULL || token[0] == '\0') return skip;
+        if(token == NULL || token[0] == '\0') return skip; //Check
 
-        if(token[0] == ';') return skip;
+        if(token[0] == ';') return skip; //Skip if comment
 
-        if(strchr(token, ':') != NULL) return label;
+        if(strchr(token, ':') != NULL) return label; 
 
         //Add Check if its a label.
         for(int i = 0; i < MAX_LABELS; i++)
@@ -45,7 +45,7 @@ op_codes LookUpTable(char *token, LabelInfo Labels_Info)
 
         for(int i = 0; i < 18; i++) //change to 26 later, when the TISA done.
         {
-                if(token[0] == ';') return skip;
+                if(token[0] == ';') return skip; //Redundent code.
                 op_codes current_code = (op_codes)i;
                 if(LK_code[current_code] == NULL) continue;
 
@@ -112,7 +112,7 @@ int Parse4Number(char *buffer)
                 trit sign = net;
 
                 if(!isdigit(buffer[i]) || ( i > 0 && isalpha(buffer[i - 1]))) {continue;}
-                if((ispunct(buffer[i - 1]) && i > 0) != 0) {sign = neg;}
+                if(i > 0 && (ispunct(buffer[i - 1])) != 0) {sign = neg;} 
                 else {sign = pos;}
 
                 int numb = 0;
